@@ -4,6 +4,8 @@ from util import load, print_items
 from scheduler import Scheduler
 from region import Region
 import random
+import pandas as pd
+import matplotlib.pyplot as plt
 
 FILENAMES = ["US-CAL-CISO", "US-MIDA-PJM", "US-MIDW-MISO", "US-TEX-ERCO"]
 LOCATIONS = [(0, 0), (10, 10), (-10, 0), (0, 10)]
@@ -19,13 +21,26 @@ def main():
     random.seed(1234)
     servers = generate_servers()
     scheduler = Scheduler(servers)
+    mean_latencies = []
+    mean_carbon_intensity = []
 
-    for i in range(TIME_STEPS):
+    for dt in range(TIME_STEPS):
         tasks = generate_tasks()
-        scheduler.schedule(tasks)
-
-        print_items(tasks)
-        break
+        latencies = scheduler.schedule(tasks)
+        servers = list(map(lambda x: x[1], latencies))
+        d = {
+            "task_batch": list(map(lambda x: x.name, tasks)),
+            "task_region": list(map(lambda x: x.region.name, tasks)),
+            "latency": list(map(lambda x: x[0], latencies)),
+            "server_region": list(map(lambda x: x.region.name, servers)),
+            "server_carbon_intensity": list(map(lambda x: x.carbon_intensity[dt], servers)),
+        }
+        df = pd.DataFrame(data=d)
+        latency = df["latency"].mean()
+        carbon_intensity = df["server_carbon_intensity"].mean()
+        mean_latencies.append(latency)
+        mean_carbon_intensity.append(carbon_intensity)
+    plot(mean_latencies, mean_carbon_intensity)
 
 
 def generate_servers():
@@ -44,6 +59,13 @@ def generate_tasks():
         TaskBatch(f"TaskBatch {i}", random.randint(0, 40), Region(name, location))
         for i, (name, location) in enumerate(zip(FILENAMES, LOCATIONS))
     ]
+
+
+def plot(mean_latencies, mean_carbon_intensity):
+    plt.plot(mean_latencies, label="Latency")
+    plt.plot(mean_carbon_intensity, label="Carbon intensity")
+    plt.legend()
+    plt.show()
 
 
 if __name__ == "__main__":

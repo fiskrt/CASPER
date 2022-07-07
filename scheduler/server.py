@@ -12,4 +12,4 @@ class Server:
         self.carbon_intensity = carbon_data["carbon_intensity_avg"]
 
     def __repr__(self) -> str:
-        return f"{self.region:<15} latency: {self.latency:<6} capcity: {self.capacity:<6}"
+        return f"{self.region:<15} capcity: {self.capacity:<6}"

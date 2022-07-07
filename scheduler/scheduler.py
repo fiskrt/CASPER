@@ -1,3 +1,4 @@
+from typing import List
 import sys
 
 
@@ -19,7 +20,7 @@ class Scheduler:
         Schedule tasks such that the lowest latency
         servers are filled first.
         """
-        print("greedy")
+        return self.compute_latencies(tasks)
 
     def __carbon_aware(self, tasks):
         """
@@ -30,10 +31,17 @@ class Scheduler:
         pass
 
     def schedule(self, tasks):
+        return self.alg(tasks)
+
+    def compute_latencies(self, tasks) -> List:
         latencies = []
         for t in tasks:
-            latency = sys.maxsize
-            for s in self.servers:
-                latency = min(latency, t.region.latency(s.region))
-            latencies.append(latency)
-        self.alg(tasks)
+            min_latency = sys.maxsize
+            index = 0
+            for i, s in enumerate(self.servers):
+                latency = t.region.latency(s.region)
+                if latency < min_latency:
+                    min_latency = latency
+                    index = i
+            latencies.append((min_latency, self.servers[index]))
+        return latencies
