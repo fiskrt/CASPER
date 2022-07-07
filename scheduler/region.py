@@ -9,7 +9,7 @@ class Region:
     def latency(self, other):
         (x1, y1) = self.location
         (x2, y2) = other.location
-        return (x2 - x1) ** 2 + (y2 - y1) ** 2
+        return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
 
     def __repr__(self) -> str:
         return self.name
