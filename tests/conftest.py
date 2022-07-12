@@ -8,23 +8,8 @@ from scheduler.constants import REGION_NAMES, LOCATIONS
 
 
 @pytest.fixture
-def df_cal():
-    return pd.read_csv("electricity_map/US-CAL-CISO.csv")
-
-
-@pytest.fixture
-def df_mida():
-    return pd.read_csv("electricity_map/US-MIDA-PJM.csv")
-
-
-@pytest.fixture
-def df_midw():
-    return pd.read_csv("electricity_map/US-MIDW-MISO.csv")
-
-
-@pytest.fixture
-def df_tex():
-    return pd.read_csv("electricity_map/US-TEX-ERCO.csv")
+def df_carbon_intensity_0_24():
+    return pd.read_csv("data/carbon_intensity_avg_0_24.csv")
 
 
 @pytest.fixture
