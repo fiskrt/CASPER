@@ -13,11 +13,13 @@ def df_carbon_intensity_0_24():
 
 
 @pytest.fixture
-def servers_infty():
+def servers_0_24():
     servers = []
-    for filename, location in zip(REGION_NAMES, LOCATIONS):
-        df = load(f"electricity_map/{filename}.csv", False)
-        r = Region(filename, location)
+    df_all = pd.read_csv("data/carbon_intensity_avg_0_24.csv")
+    names = ["CAL", "MIDA", "MIDW", "TEX"]
+    for name, location in zip(names, LOCATIONS):
+        df = pd.DataFrame(data={"carbon_intensity_avg": df_all[name]})
+        r = Region(name, location)
         s = Server(999999, r, df)
         servers.append(s)
 
