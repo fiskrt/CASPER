@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def load(name, resample=True, resample_metric="W"):
@@ -11,18 +12,18 @@ def load(name, resample=True, resample_metric="W"):
     return df
 
 
-# def plot(df_i):
-#     fig = plt.figure(figsize=(18, 14))
-#     for i, c in enumerate(columns):
-#         ax = plt.subplot(4, 4, i + 1)
-#         dfs[df_i][c].mean().plot(ax=ax, label=c)
-#         ax.set_xticklabels([])
-#         ax.legend(loc="upper left")
-
-#     fig.suptitle(filenames[df_i])
-#     plt.show()
-
-
 def print_items(items):
     for e in items:
         print(e)
+
+
+def plot(mean_latencies, mean_carbon_intensity):
+    plt.figure()
+    x = np.linspace(0, 24, len(mean_latencies))
+    plt.subplot(1, 2, 1)
+    plt.plot(x, mean_latencies, label="Latency")
+    plt.legend()
+    plt.subplot(1, 2, 2)
+    plt.plot(x, mean_carbon_intensity, label="Carbon")
+    plt.legend()
+    plt.show()
