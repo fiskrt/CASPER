@@ -1,10 +1,15 @@
+from scheduler.constants import REGION_NAMES, REGION_LOCATIONS
+from scheduler.region import Region
+from scheduler.util import load
+
+
 class Server:
     """
     An artificial server with a carbon trace,
     latency and capacity.
     """
 
-    def __init__(self, capacity, region, carbon_data):
+    def __init__(self, capacity: int, region: Region, carbon_data):
         """ """
         self.capacity = capacity
         self.current_utilization = 0
@@ -26,3 +31,14 @@ class Server:
 
     def reset_utilization(self):
         self.current_utilization = 0
+
+
+def build_servers():
+    servers = []
+    for name, location in zip(REGION_NAMES, REGION_LOCATIONS):
+        df = load(f"electricity_map/{name}.csv", False)
+        r = Region(name, location)
+        s = Server(1000, r, df)
+        servers.append(s)
+
+    return servers
