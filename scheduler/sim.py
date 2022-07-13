@@ -15,6 +15,7 @@ import random
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from simpy import Environment, Resource
 
 
 def main():
@@ -28,7 +29,7 @@ def main():
     tasks = []
     # scheduler = Scheduler(servers, scheduler="carbon_greedy")
     scheduler = Scheduler(servers, scheduler="carbon_aware")
-    #scheduler = Scheduler(servers, scheduler="latency_greedy")
+    # scheduler = Scheduler(servers, scheduler="latency_greedy")
     mean_latencies = []
     mean_carbon_intensity = []
 
@@ -76,7 +77,10 @@ def generate_tasks():
 
     return [
         TaskBatch(
-            f"TaskBatch {i}", 1, int(np.random.normal(TASK_LIFETIME_MEAN, TASK_LIFETIME_STD)), Region(name, location)
+            f"TaskBatch {i}",
+            1,
+            int(np.random.normal(TASK_LIFETIME_MEAN, TASK_LIFETIME_STD)),
+            Region(name, location),
         )
         for i, (name, location) in enumerate(zip(REGION_NAMES, LOCATIONS))
     ]

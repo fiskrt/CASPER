@@ -12,3 +12,8 @@ class TaskBatch:
         # this should not go beneath 0
         self.load -= load
         assert self.load >= 0
+
+
+class TaskGenerator:
+    def __init__(self):
+        pass
