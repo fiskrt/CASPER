@@ -1,9 +1,11 @@
 import numpy as np
+from scheduler.region import Region
 
 
 class Scheduler:
-    def __init__(self, servers, scheduler="latency_greedy") -> None:
+    def __init__(self, servers, region: Region, scheduler="latency_greedy") -> None:
         self.servers = servers
+        self.region = region
         self.alg = self.__get_scheduler(scheduler)
 
     def __get_scheduler(self, name):

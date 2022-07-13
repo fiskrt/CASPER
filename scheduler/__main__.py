@@ -3,6 +3,8 @@ from scheduler.task import build_tasks
 from scheduler.util import plot
 from scheduler.scheduler import Scheduler
 from scheduler.constants import TIMESTEPS, TASK_PER_TIMESTEP
+from scheduler.parser import parse_arguments
+import sys
 import random
 
 
@@ -13,12 +15,11 @@ def main():
     and carbon footprint summary. Report it.
     """
     random.seed(1234)
+    conf = parse_arguments(sys.argv[1:])
 
     servers = build_servers()
     tasks = []
-    # scheduler = Scheduler(servers, scheduler="carbon_greedy")
-    scheduler = Scheduler(servers, scheduler="carbon_aware")
-    # scheduler = Scheduler(servers, scheduler="latency_greedy")
+    scheduler = Scheduler(servers, scheduler=conf.algorithm)
     mean_latencies = []
     mean_carbon_intensity = []
 
@@ -26,7 +27,7 @@ def main():
         # reset server utilization
         # assumption:
 
-        for ds in range(0, TASK_PER_TIMESTEP):
+        for _ in range(0, TASK_PER_TIMESTEP):
             task_batch = build_tasks()
             tasks.extend(task_batch)
 
