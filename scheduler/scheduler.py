@@ -1,5 +1,7 @@
-import numpy as np
 from scheduler.region import Region
+from scheduler.task import TaskBatch
+import numpy as np
+from collections import deque
 
 
 class Scheduler:
@@ -7,6 +9,7 @@ class Scheduler:
         self.servers = servers
         self.region = region
         self.alg = self.__get_scheduler(scheduler)
+        self.buffer = deque()
 
     def __get_scheduler(self, name):
         if name == "latency_greedy":
@@ -16,35 +19,41 @@ class Scheduler:
         elif name == "carbon_aware":
             return self.__carbon_aware
 
-    def __latency_greedy(self, tasks, dt):
+    def __latency_greedy(self, task_batch, dt):
         """
         Schedule tasks such that the lowest latency
         servers are filled first.
         """
-        scheduled_tasks = {}
-        for t in tasks:
-            data = [
-                {"latency": t.region.latency(s.region), "carbon_intensity": s.carbon_intensity[dt], "server": s}
+        return sorted(
+            [
+                {
+                    "latency": task_batch.region.latency(s.region),
+                    "carbon_intensity": s.carbon_intensity[dt],
+                    "server": s,
+                }
                 for s in self.servers
-            ]
-            scheduled_tasks[t] = sorted(data, key=lambda x: x["latency"])
-        return scheduled_tasks
+            ],
+            key=lambda x: x["latency"],
+        )
 
-    def __carbon_greedy(self, tasks, dt):
+    def __carbon_greedy(self, task_batch, dt):
         """
         Schedule tasks such that the lowest carbon intensity
         servers are filled first.
         """
-        scheduled_tasks = {}
-        for t in tasks:
-            data = [
-                {"latency": t.region.latency(s.region), "carbon_intensity": s.carbon_intensity[dt], "server": s}
+        return sorted(
+            [
+                {
+                    "latency": task_batch.region.latency(s.region),
+                    "carbon_intensity": s.carbon_intensity[dt],
+                    "server": s,
+                }
                 for s in self.servers
-            ]
-            scheduled_tasks[t] = sorted(data, key=lambda x: x["carbon_intensity"])
-        return scheduled_tasks
+            ],
+            key=lambda x: x["carbon_intensity"],
+        )
 
-    def __carbon_aware(self, tasks, dt):
+    def __carbon_aware(self, task_batch, dt):
         """
         Input: tasks that want to be run.
         Output: What server each task should be run on
@@ -57,45 +66,51 @@ class Scheduler:
         have enough capacity, we just move on to the next
         server.
         """
-        scheduled_tasks = {}
         max_latency = 20
-        for t in tasks:
-            data = [
-                {"latency": t.region.latency(s.region), "carbon_intensity": s.carbon_intensity[dt], "server": s}
-                for s in self.servers
-            ]
-            below = sorted([x for x in data if x["latency"] <= max_latency], key=lambda x: x["carbon_intensity"])
-            above = sorted([x for x in data if x["latency"] > max_latency], key=lambda x: x["carbon_intensity"])
-            scheduled_tasks[t] = below + above
-        return scheduled_tasks
+        data = [
+            {"latency": task_batch.region.latency(s.region), "carbon_intensity": s.carbon_intensity[dt], "server": s}
+            for s in self.servers
+        ]
+        below = sorted([x for x in data if x["latency"] <= max_latency], key=lambda x: x["carbon_intensity"])
+        above = sorted([x for x in data if x["latency"] > max_latency], key=lambda x: x["carbon_intensity"])
+        return below + above
 
-    def schedule(self, tasks, dt):
-        scheduled_tasks = self.alg(tasks, dt)
+    def schedule(self, task_batch, dt: int):
         data = {"latency": [], "carbon_intensity": []}
+        self.buffer.append(task_batch)
 
-        for task in scheduled_tasks:
-            for scheduled_item in scheduled_tasks[task]:
+        def add_data(task_batch, scheduled_item):
+            for key in ["latency", "carbon_intensity"]:
+                data[key].append(scheduled_item[key] * task_batch.load)
 
+        i = 0
+        while i < len(self.buffer):
+            task_batch = self.buffer[i]
+            scheduled_task_batch = self.alg(task_batch, dt)
+
+            for scheduled_item in scheduled_task_batch:
                 s = scheduled_item["server"]
-                latency = scheduled_item["latency"]
-                carbon_intensity = scheduled_item["carbon_intensity"]
 
-                if s.update_utilization(task.load):
-                    data["latency"].append(latency * task.load)
-                    data["carbon_intensity"].append(carbon_intensity * task.load)
-                    task.reduce_load(task.load)
+                if s.update_utilization(task_batch):
+                    add_data(task_batch, scheduled_item)
+                    del self.buffer[i]
+                    i -= 1
                     break
                 else:
                     # send partial batch and update load
                     partial_load = s.get_utilization_left()
                     if partial_load == 0:
                         continue
-                    task.reduce_load(partial_load)
-                    s.update_utilization(partial_load)
+                    task_batch.reduce_load(partial_load)
+                    partial_batch = TaskBatch(
+                        task_batch.name + ":partial", partial_load, task_batch.lifetime, task_batch.region
+                    )
+                    s.update_utilization(partial_batch)
 
-                    data["latency"].append(latency * task.load)
-                    data["carbon_intensity"].append(carbon_intensity * task.load)
+                    add_data(task_batch, scheduled_item)
+            i += 1
 
-        data["latency"] = np.mean(data["latency"])
-        data["carbon_intensity"] = np.mean(data["carbon_intensity"])
+        for key in ["latency", "carbon_intensity"]:
+            data[key] = np.mean(data[key])
+
         return data

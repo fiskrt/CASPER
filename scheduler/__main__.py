@@ -1,11 +1,13 @@
 from scheduler.server import build_servers
-from scheduler.task import build_tasks
+from scheduler.task import TaskBatch
 from scheduler.util import plot
 from scheduler.scheduler import Scheduler
-from scheduler.constants import TIMESTEPS, TASK_PER_TIMESTEP
+from scheduler.constants import TIMESTEPS, TASK_PER_TIMESTEP, REGION_LOCATIONS, REGION_NAMES
 from scheduler.parser import parse_arguments
+from scheduler.region import Region
 import sys
 import random
+import numpy as np
 
 
 def main():
@@ -18,32 +20,35 @@ def main():
     conf = parse_arguments(sys.argv[1:])
 
     servers = build_servers()
-    tasks = []
-    scheduler = Scheduler(servers, scheduler=conf.algorithm)
+    schedulers = [
+        Scheduler(servers, Region(name, location), scheduler=conf.algorithm)
+        for name, location in zip(REGION_NAMES, REGION_LOCATIONS)
+    ]
     mean_latencies = []
     mean_carbon_intensity = []
+    id = 0
 
     for dt in range(TIMESTEPS):
-        # reset server utilization
-        # assumption:
-
         for _ in range(0, TASK_PER_TIMESTEP):
-            task_batch = build_tasks()
-            tasks.extend(task_batch)
 
+            latency = []
+            carbon_intensity = []
             # get list of servers for each task batch where the
             # scheduler thinks it is best to place each batch
-            data = scheduler.schedule(tasks, dt)
+            indices = np.random.choice(len(schedulers), len(schedulers), replace=False)
+            for i in indices:
+                scheduler = schedulers[i]
+                task_batch = TaskBatch(f"Task {id}", 1, 1, scheduler.region)
+                data = scheduler.schedule(task_batch, dt)
+                latency.append(data["latency"])
+                carbon_intensity.append(data["carbon_intensity"])
+                id += 1
 
-            # remove any task batch that has a load of 0
-            for task in tasks:
-                task.lifetime -= 1
-
-            tasks = [task for task in tasks if task.load != 0 and task.lifetime > 0]
-
+            for s in servers:
+                s.step()
             # extract information used for plotting
-            mean_latencies.append(data["latency"])
-            mean_carbon_intensity.append(data["carbon_intensity"])
+            mean_latencies.append(np.mean(latency))
+            mean_carbon_intensity.append(np.mean(carbon_intensity))
 
     plot(mean_latencies, mean_carbon_intensity)
 
