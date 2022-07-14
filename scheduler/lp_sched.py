@@ -32,9 +32,11 @@ def sched_only_carbon():
 
     return [math.ceil(x) for x in opt.x]
 
-def schedule(n_tasks):
+def schedule(task, t):
     """
+
     """
+    n_tasks = task.load
     # In some way (api/database) get the servers' carbon,latency, capacity
     carb_intensity = [2,3,5,5,5]
     latency = np.asarray([5,5,5,3,1])
