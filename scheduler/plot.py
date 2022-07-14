@@ -23,36 +23,27 @@ class Plot:
 
         self.data[dt].append(data)
 
-    def __preprocess(self, key: str, all=True):
+    def get(self, key):
+        return np.array([np.mean(list(map(lambda y: y[key], x))) for x in self.data])
+
+    def __preprocess(self, key: str, all=True, should_index_server=False):
+        def index_server(y, key, should_index_server=False):
+            if should_index_server:
+                return y["server"][key]
+            return y[key]
+
         if all:
-            mean = np.array([np.mean(list(map(lambda y: y[key], x))) for x in self.data])
-            std = np.array([np.std(list(map(lambda y: y[key], x))) for x in self.data])
+            mean = np.array(
+                [np.mean(list(map(lambda y: index_server(y, key, should_index_server), x))) for x in self.data]
+            )
+            std = np.array(
+                [np.std(list(map(lambda y: index_server(y, key, should_index_server), x))) for x in self.data]
+            )
         else:
-            values_with_names = [list(map(lambda y: (y[key], y["server"]["name"]), x)) for x in self.data]
-            mean = np.zeros(shape=(len(values_with_names), len(REGION_NAMES)))
-            std = np.zeros(shape=(len(values_with_names), len(REGION_NAMES)))
-            for i, item in enumerate(values_with_names):
-                values = {name: [] for name in REGION_NAMES}
-                for (v, name) in item:
-                    values[name].append(v)
-                for name in REGION_NAMES:
-                    values[name] = (np.mean(values[name]), np.std(values[name]))
-
-                for j in range(len(REGION_NAMES)):
-                    name = REGION_NAMES[j]
-                    mean[i, j] = values[name][0]
-                    std[i, j] = values[name][1]
-            mean = pd.DataFrame(data=mean, columns=REGION_NAMES)
-            std = pd.DataFrame(data=std, columns=REGION_NAMES)
-
-        return mean, std
-
-    def __preprocess_server(self, key: str, all=True):
-        if all:
-            mean = np.array([np.mean(list(map(lambda y: y["server"][key], x))) for x in self.data])
-            std = np.array([np.std(list(map(lambda y: y["server"][key], x))) for x in self.data])
-        else:
-            values_with_names = [list(map(lambda y: (y["server"][key], y["server"]["name"]), x)) for x in self.data]
+            values_with_names = [
+                list(map(lambda y: (index_server(y, key, should_index_server), y["server"]["name"]), x))
+                for x in self.data
+            ]
             mean = np.zeros(shape=(len(values_with_names), len(REGION_NAMES)))
             std = np.zeros(shape=(len(values_with_names), len(REGION_NAMES)))
             for i, item in enumerate(values_with_names):
@@ -74,7 +65,7 @@ class Plot:
     def plot(self, conf):
         mean_latency, std_latency = self.__preprocess("latency")
         mean_carbon_intensity, std_carbon_intensity = self.__preprocess("carbon_intensity")
-        mean_utilization, std_utilization = self.__preprocess_server("utilization")
+        mean_utilization, std_utilization = self.__preprocess("utilization", should_index_server=True)
         graphs = {
             "latency": [mean_latency, std_latency],
             "carbon_intensity": [mean_carbon_intensity, std_carbon_intensity],
@@ -98,7 +89,9 @@ class Plot:
 
         mean_servers_latency, std_servers_latency = self.__preprocess("latency", False)
         mean_servers_carbon_intensity, std_servers_carbon_intensity = self.__preprocess("carbon_intensity", False)
-        mean_servers_utilization, std_servers_utilization = self.__preprocess_server("utilization", False)
+        mean_servers_utilization, std_servers_utilization = self.__preprocess(
+            "utilization", False, should_index_server=True
+        )
         graphs_servers = {
             "latency": [mean_servers_latency, std_servers_latency],
             "carbon_intensity": [mean_servers_carbon_intensity, std_servers_carbon_intensity],

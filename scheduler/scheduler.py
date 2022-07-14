@@ -76,7 +76,6 @@ class Scheduler:
         return below + above
 
     def schedule(self, plot, task_batch, dt: int):
-        data = {"latency": [], "carbon_intensity": []}
         self.buffer.append(task_batch)
 
         i = 0
@@ -105,8 +104,8 @@ class Scheduler:
 
                     plot.add(task_batch, scheduled_item, dt)
             i += 1
-
+        data = {}
         for key in ["latency", "carbon_intensity"]:
-            data[key] = np.mean(data[key])
+            data[key] = plot.get(key)
 
         return data
