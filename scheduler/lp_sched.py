@@ -32,17 +32,36 @@ def sched_only_carbon():
 
     return [math.ceil(x) for x in opt.x]
 
+def schedule2(task_batch, t: int):
+    data = {"latency": [], "carbon_intensity": []}
+
+    def add_data(task_batch, scheduled_item):
+        for key in ["latency", "carbon_intensity"]:
+            data[key].append(scheduled_item[key] * task_batch.load)
+
+    # server update utilization
+    # if server full, keep request in buffer to next time step
+
+    for key in ["latency", "carbon_intensity"]:
+        data[key] = np.mean(data[key])
+
+    return data
+
 def schedule(task, t):
     """
 
     """
     n_tasks = task
     # In some way (api/database) get the servers' carbon,latency, capacity
-    carb_intensity = [2,3,5,5,5]
+    carb_intensity = np.asarray([2,3,5,5,5])
     latency = np.asarray([5,5,5,3,1])
-    cap = 20 
+    cap = 50 
     capacities = [cap]*len(latency)
-    return sched_carb_latency(n_tasks, carb_intensity, capacities, latency)
+    sched = sched_carb_latency(n_tasks, carb_intensity, capacities, latency, mu=0.74)
+    print(sched)
+    return sched@carb_intensity
+
+
 
 
 def sched_carb_latency(n_tasks, carb_intensity, capacities, latency, mu=1):
@@ -86,7 +105,7 @@ def sched_carb_latency(n_tasks, carb_intensity, capacities, latency, mu=1):
         print('Warning: No server availible!')
     print(opt.message)
     print(f'Objective value: {opt.fun}')
-    return [math.ceil(x) for x in opt.x][:n_servers]
+    return np.asarray([math.ceil(x) for x in opt.x][:n_servers])
 
 a = schedule(100, t=5)
 print(a)
