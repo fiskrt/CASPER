@@ -36,11 +36,11 @@ def schedule(task, t):
     """
 
     """
-    n_tasks = task.load
+    n_tasks = task
     # In some way (api/database) get the servers' carbon,latency, capacity
     carb_intensity = [2,3,5,5,5]
     latency = np.asarray([5,5,5,3,1])
-    cap = 50
+    cap = 20 
     capacities = [cap]*len(latency)
     return sched_carb_latency(n_tasks, carb_intensity, capacities, latency)
 
@@ -82,9 +82,11 @@ def sched_carb_latency(n_tasks, carb_intensity, capacities, latency, mu=1):
     opt = linprog(c=obj_coef, A_ub=lhs_ineq, b_ub=rhs_ineq,
                 A_eq=lhs_eq, b_eq=rhs_eq, bounds=bnd,
                 method="revised simplex")
+    if opt.status == 2:
+        print('Warning: No server availible!')
     print(opt.message)
     print(f'Objective value: {opt.fun}')
     return [math.ceil(x) for x in opt.x][:n_servers]
 
-a = schedule(n_tasks=100)
+a = schedule(100, t=5)
 print(a)
