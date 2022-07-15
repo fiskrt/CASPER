@@ -5,9 +5,10 @@ from scheduler.constants import REGION_NAMES
 
 
 class Plot:
-    def __init__(self, timesteps) -> None:
-        self.timesteps = timesteps
-        self.data = [[] for _ in range(timesteps)]
+    def __init__(self, conf) -> None:
+        self.conf = conf
+        self.timesteps = conf.timesteps
+        self.data = [[] for _ in range(conf.timesteps)]
 
     def add(self, task_batch, scheduled_item, dt):
         data = {}
@@ -62,7 +63,7 @@ class Plot:
 
         return mean, std
 
-    def plot(self, conf):
+    def plot(self):
         mean_latency, std_latency = self.__preprocess("latency")
         mean_carbon_intensity, std_carbon_intensity = self.__preprocess("carbon_intensity")
         mean_utilization, std_utilization = self.__preprocess("utilization", should_index_server=True)

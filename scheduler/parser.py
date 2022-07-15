@@ -12,4 +12,20 @@ def parse_arguments(argv):
         default="latency_greedy",
     )
 
+    parser.add_argument(
+        "-dt",
+        "--timesteps",
+        type=int,
+        help="The total number of hours",
+        default=24,
+    )
+
+    parser.add_argument(
+        "-ds",
+        "--tasks-per-timestep",
+        type=int,
+        help="The number of times per timestep that task batches are generated",
+        default=6,
+    )
+
     return parser.parse_args(argv)
