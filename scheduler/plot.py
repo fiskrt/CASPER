@@ -10,7 +10,7 @@ class Plot:
         self.timesteps = conf.timesteps
         self.data = [[] for _ in range(conf.timesteps)]
 
-    def add(self, task_batch, scheduled_item, dt):
+    def add(self, task_batch, scheduled_item, t):
         data = {}
         for key in ["latency", "carbon_intensity"]:
             data[key] = scheduled_item[key] * task_batch.load
@@ -22,7 +22,8 @@ class Plot:
             "buffer_size": len(s.buffer),
         }
 
-        self.data[dt].append(data)
+        self.data[t].append(data)
+
 
     def get(self, key):
         return np.array([np.mean(list(map(lambda y: y[key], x))) for x in self.data])

@@ -5,6 +5,7 @@ from scheduler.constants import REGION_LOCATIONS, REGION_NAMES
 from scheduler.parser import parse_arguments
 from scheduler.region import Region
 from scheduler.plot import Plot
+from scheduler.lp_sched import schedule
 import sys
 import random
 import numpy as np
@@ -20,10 +21,7 @@ def main():
     conf = parse_arguments(sys.argv[1:])
 
     servers = build_servers()
-    schedulers = [
-        Scheduler(servers, Region(name, location), scheduler=conf.algorithm)
-        for name, location in zip(REGION_NAMES, REGION_LOCATIONS)
-    ]
+    regions = [Region(name,location) for name, location in zip(REGION_NAMES, REGION_LOCATIONS)] 
     plot = Plot(conf)
     id = 0
 
@@ -31,11 +29,9 @@ def main():
         for _ in range(0, conf.tasks_per_timestep):
             # get list of servers for each task batch where the
             # scheduler thinks it is best to place each batch
-            indices = np.random.choice(len(schedulers), len(schedulers), replace=False)
-            for i in indices:
-                scheduler = schedulers[i]
-                task_batch = TaskBatch(f"Task {id}", 1, 1, scheduler.region)
-                data = scheduler.schedule(plot, task_batch, dt)
+            for i in range(len(regions)):
+                task_batch = TaskBatch(f"Task {id}", 1, 1, regions[i])
+                data = schedule(plot, task_batch, servers, dt)
                 id += 1
 
             for s in servers:
