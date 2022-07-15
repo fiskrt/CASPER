@@ -24,7 +24,6 @@ class Plot:
 
         self.data[t].append(data)
 
-
     def get(self, key):
         return np.array([np.mean(list(map(lambda y: y[key], x))) for x in self.data])
 
@@ -59,8 +58,8 @@ class Plot:
                     name = REGION_NAMES[j]
                     mean[i, j] = values[name][0]
                     std[i, j] = values[name][1]
-            mean = pd.DataFrame(data=mean, columns=REGION_NAMES)
-            std = pd.DataFrame(data=std, columns=REGION_NAMES)
+            mean = pd.DataFrame(data=mean, columns=REGION_NAMES).fillna(0)
+            std = pd.DataFrame(data=std, columns=REGION_NAMES).fillna(0)
 
         return mean, std
 
@@ -70,7 +69,7 @@ class Plot:
         mean_utilization, std_utilization = self.__preprocess("utilization", should_index_server=True)
         graphs = {
             "latency": [mean_latency, std_latency],
-            "carbon_intensity": [mean_carbon_intensity, std_carbon_intensity],
+            "carbon_emissions": [mean_carbon_intensity, std_carbon_intensity],
             "utilization": [mean_utilization, std_utilization],
         }
 
@@ -86,7 +85,6 @@ class Plot:
             ax.set_title(key)
             ax.plot(x, mean, label=key)
             ax.fill_between(x, mean - error, mean + error, alpha=0.3)
-            # ax.legend()
             i += 1
 
         mean_servers_latency, std_servers_latency = self.__preprocess("latency", False)
@@ -96,7 +94,7 @@ class Plot:
         )
         graphs_servers = {
             "latency": [mean_servers_latency, std_servers_latency],
-            "carbon_intensity": [mean_servers_carbon_intensity, std_servers_carbon_intensity],
+            "carbon_emissions": [mean_servers_carbon_intensity, std_servers_carbon_intensity],
             "utilization": [mean_servers_utilization, std_servers_utilization],
         }
         for key in graphs_servers:

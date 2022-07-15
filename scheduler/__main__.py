@@ -1,6 +1,5 @@
 from scheduler.server import build_servers
 from scheduler.task import TaskBatch
-from scheduler.scheduler import Scheduler
 from scheduler.constants import REGION_LOCATIONS, REGION_NAMES
 from scheduler.parser import parse_arguments
 from scheduler.region import Region
@@ -8,7 +7,6 @@ from scheduler.plot import Plot
 from scheduler.lp_sched import schedule
 import sys
 import random
-import numpy as np
 
 
 def main():
@@ -21,7 +19,7 @@ def main():
     conf = parse_arguments(sys.argv[1:])
 
     servers = build_servers()
-    regions = [Region(name,location) for name, location in zip(REGION_NAMES, REGION_LOCATIONS)] 
+    regions = [Region(name, location) for name, location in zip(REGION_NAMES, REGION_LOCATIONS)]
     plot = Plot(conf)
     id = 0
 
@@ -31,7 +29,7 @@ def main():
             # scheduler thinks it is best to place each batch
             for i in range(len(regions)):
                 task_batch = TaskBatch(f"Task {id}", 1, 1, regions[i])
-                data = schedule(plot, task_batch, servers, dt)
+                schedule(plot, task_batch, servers, dt, conf.algorithm)
                 id += 1
 
             for s in servers:
