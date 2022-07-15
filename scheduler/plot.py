@@ -52,14 +52,17 @@ class Plot:
                 for (v, name) in item:
                     values[name].append(v)
                 for name in REGION_NAMES:
-                    values[name] = (np.mean(values[name]), np.std(values[name]))
+                    if len(values[name]) == 0:
+                        values[name] = (0, 0)
+                    else:
+                        values[name] = (np.mean(values[name]), np.std(values[name]))
 
                 for j in range(len(REGION_NAMES)):
                     name = REGION_NAMES[j]
                     mean[i, j] = values[name][0]
                     std[i, j] = values[name][1]
-            mean = pd.DataFrame(data=mean, columns=REGION_NAMES).fillna(0)
-            std = pd.DataFrame(data=std, columns=REGION_NAMES).fillna(0)
+            mean = pd.DataFrame(data=mean, columns=REGION_NAMES)
+            std = pd.DataFrame(data=std, columns=REGION_NAMES)
 
         return mean, std
 
