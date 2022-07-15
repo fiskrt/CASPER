@@ -34,7 +34,7 @@ def schedule(plot, task_batch, servers, t, algorithm):
         if load == 0:
             continue
 
-        data = {"latency": latency[i], "carbon_intensity": carbon_intensity[i] * load, "server": servers[i]}
+        data = {"latency": latency[i], "carbon_emissions": carbon_intensity[i] * load, "server": servers[i]}
         plot.add(task_batch, data, t)
 
 

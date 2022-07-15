@@ -12,8 +12,8 @@ class Plot:
 
     def add(self, task_batch, scheduled_item, t):
         data = {}
-        for key in ["latency", "carbon_intensity"]:
-            data[key] = scheduled_item[key] * task_batch.load
+        for key in ["latency", "carbon_emissions"]:
+            data[key] = scheduled_item[key]
 
         s = scheduled_item["server"]
         data["server"] = {
@@ -24,8 +24,8 @@ class Plot:
 
         self.data[t].append(data)
 
-    def get(self, key):
-        return np.array([np.mean(list(map(lambda y: y[key], x))) for x in self.data])
+    def get(self, dt: int):
+        return self.data[dt]
 
     def __preprocess(self, key: str, all=True, should_index_server=False):
         def index_server(y, key, should_index_server=False):
@@ -68,11 +68,11 @@ class Plot:
 
     def plot(self):
         mean_latency, std_latency = self.__preprocess("latency")
-        mean_carbon_intensity, std_carbon_intensity = self.__preprocess("carbon_intensity")
+        mean_carbon_emissions, std_carbon_emissions = self.__preprocess("carbon_emissions")
         mean_utilization, std_utilization = self.__preprocess("utilization", should_index_server=True)
         graphs = {
             "latency": [mean_latency, std_latency],
-            "carbon_emissions": [mean_carbon_intensity, std_carbon_intensity],
+            "carbon_emissions": [mean_carbon_emissions, std_carbon_emissions],
             "utilization": [mean_utilization, std_utilization],
         }
 
@@ -91,13 +91,13 @@ class Plot:
             i += 1
 
         mean_servers_latency, std_servers_latency = self.__preprocess("latency", False)
-        mean_servers_carbon_intensity, std_servers_carbon_intensity = self.__preprocess("carbon_intensity", False)
+        mean_servers_carbon_emissions, std_servers_carbon_emissions = self.__preprocess("carbon_emissions", False)
         mean_servers_utilization, std_servers_utilization = self.__preprocess(
             "utilization", False, should_index_server=True
         )
         graphs_servers = {
             "latency": [mean_servers_latency, std_servers_latency],
-            "carbon_emissions": [mean_servers_carbon_intensity, std_servers_carbon_intensity],
+            "carbon_emissions": [mean_servers_carbon_emissions, std_servers_carbon_emissions],
             "utilization": [mean_servers_utilization, std_servers_utilization],
         }
         for key in graphs_servers:
