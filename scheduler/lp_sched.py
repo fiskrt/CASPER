@@ -1,15 +1,17 @@
 from scipy.optimize import linprog
+from scheduler.task import TaskBatch
 import numpy as np
 import math
 
 
-def schedule(plot, task_batch, servers, t, algorithm):
+def schedule(task_batch, servers, algorithm, t):
     """
     {
         "latency": int,
         "carbon_intensity": int,
         "server": {},
     }
+    returns: A list with partial task batches
     """
     if algorithm == "latency_greedy":
         mu = 999
@@ -24,17 +26,9 @@ def schedule(plot, task_batch, servers, t, algorithm):
     latency = np.array([s.region.latency(task_batch.region) for s in servers])
 
     capacities = [s.get_utilization_left() for s in servers]
-    requests_to_servers = sched_carb_latency(n_tasks, carbon_intensity, capacities, latency, mu=0.74)
-     
-    # carb_per_server = sched*carb_intensity
-    # latency_per_server = sched*latency
-    for i in range(len(requests_to_servers)):
-        load = requests_to_servers[i]
-        if load == 0:
-            continue
+    requests = sched_carb_latency(n_tasks, carbon_intensity, capacities, latency, mu=mu)
 
-        data = {"latency": latency[i], "carbon_emissions": carbon_intensity[i] * load, "server": servers[i]}
-        plot.add(task_batch, data, t)
+    return latency, carbon_intensity, requests
 
 
 def sched_carb_latency(n_tasks, carb_intensity, capacities, latency, mu=1):

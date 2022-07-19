@@ -43,10 +43,12 @@ class Server:
 
 def build_servers():
     servers = []
+    i = 1
     for name, location in zip(REGION_NAMES, REGION_LOCATIONS):
         df = load(f"electricity_map/{name}.csv", False)
         r = Region(name, location)
-        s = Server(1000, r, df)
+        s = Server(10 * i, r, df)
         servers.append(s)
+        i += 1
 
     return servers

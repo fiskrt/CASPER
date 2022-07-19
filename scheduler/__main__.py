@@ -23,19 +23,33 @@ def main():
     plot = Plot(conf)
     id = 0
 
-    for dt in range(conf.timesteps):
+    for t in range(conf.timesteps):
         for _ in range(0, conf.tasks_per_timestep):
             # get list of servers for each task batch where the
             # scheduler thinks it is best to place each batch
             for i in range(len(regions)):
-                task_batch = TaskBatch(f"Task {id}", 1, 1, regions[i])
-                schedule(plot, task_batch, servers, dt, conf.algorithm)
+                task_batch = TaskBatch(f"Task {id}", 3, 5, regions[i])
+                latency, carbon_intensity, requests = schedule(task_batch, servers, conf.algorithm, t)
+                update_servers(plot, servers, task_batch, t, latency, carbon_intensity, requests)
                 id += 1
 
             for s in servers:
                 s.step()
 
     plot.plot()
+
+
+def update_servers(plot, servers, task_batch, t, latency, carbon_intensity, requests):
+
+    for i in range(len(requests)):
+        load = requests[i]
+        if load == 0:
+            continue
+        batch = TaskBatch(f"{task_batch.name}_{i}", requests[i], task_batch.lifetime, task_batch.region)
+        servers[i].update_utilization(batch)
+
+        data = {"latency": latency[i], "carbon_emissions": carbon_intensity[i] * load, "server": servers[i]}
+        plot.add(batch, data, t)
 
 
 if __name__ == "__main__":
