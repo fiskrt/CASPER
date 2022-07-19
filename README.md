@@ -8,11 +8,26 @@ Install all required packages specified in requirements.txt
 pip install -r requirements.py
 ```
 
-## Running
+## Usage
 To run the scheduler, make sure the working directory is the root folder of the repository and run the following
 
 ```
-python -m scheduler
+python -m scheduler --help
+```
+
+```
+usage: __main__.py [-h] [-a {latency_greedy,carbon_greedy,carbon_aware}]
+                   [-dt TIMESTEPS] [-ds TASKS_PER_TIMESTEP]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -a {latency_greedy,carbon_greedy,carbon_aware}, --algorithm {latency_greedy,carbon_greedy,carbon_aware}
+                        The scheduling algorithm to use
+  -dt TIMESTEPS, --timesteps TIMESTEPS
+                        The total number of hours
+  -ds TASKS_PER_TIMESTEP, --tasks-per-timestep TASKS_PER_TIMESTEP
+                        The number of times per timestep that task batches are
+                        generated
 ```
 
 ## Testing ![Test](https://github.com/Zonotora/umass/workflows/Test/badge.svg?branch=main&event=push)
