@@ -23,10 +23,17 @@ def schedule(plot, task_batch, servers, t, algorithm):
     carbon_intensity = np.array([s.carbon_intensity[t] for s in servers])
     latency = np.array([s.region.latency(task_batch.region) for s in servers])
 
+<<<<<<< HEAD
     cap = 50
     capacities = [cap] * len(latency)
     requests_to_servers = sched_carb_latency(n_tasks, carbon_intensity, capacities, latency, mu=mu)
 
+=======
+    cap = 50 
+    capacities = [s.get_utilization_left() for s in servers]
+    requests_to_servers = sched_carb_latency(n_tasks, carbon_intensity, capacities, latency, mu=0.74)
+     
+>>>>>>> fixed #16
     # carb_per_server = sched*carb_intensity
     # latency_per_server = sched*latency
     for i in range(len(requests_to_servers)):
