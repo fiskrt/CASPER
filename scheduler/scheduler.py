@@ -1,5 +1,5 @@
 from scheduler.region import Region
-from scheduler.task import TaskBatch
+from scheduler.request import RequestBatch
 import numpy as np
 from collections import deque
 
@@ -97,7 +97,7 @@ class Scheduler:
                     if partial_load == 0:
                         continue
                     task_batch.reduce_load(partial_load)
-                    partial_batch = TaskBatch(
+                    partial_batch = RequestBatch(
                         task_batch.name + ":partial", partial_load, task_batch.lifetime, task_batch.region
                     )
                     s.update_utilization(partial_batch)

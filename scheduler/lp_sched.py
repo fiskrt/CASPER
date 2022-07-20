@@ -1,5 +1,5 @@
 from scipy.optimize import linprog
-from scheduler.task import TaskBatch
+from scheduler.request import RequestBatch
 import numpy as np
 import math
 

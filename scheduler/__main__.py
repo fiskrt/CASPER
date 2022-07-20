@@ -1,5 +1,5 @@
 from scheduler.server import build_servers
-from scheduler.task import TaskBatch
+from scheduler.request import RequestBatch
 from scheduler.constants import REGION_LOCATIONS, REGION_NAMES
 from scheduler.parser import parse_arguments
 from scheduler.region import Region
@@ -28,7 +28,7 @@ def main():
             # get list of servers for each task batch where the
             # scheduler thinks it is best to place each batch
             for i in range(len(regions)):
-                task_batch = TaskBatch(f"Task {id}", 3, 5, regions[i])
+                task_batch = RequestBatch(f"Task {id}", 3, 5, regions[i])
                 latency, carbon_intensity, requests = schedule(task_batch, servers, conf.algorithm, t)
                 update_servers(plot, servers, task_batch, t, latency, carbon_intensity, requests)
                 id += 1
@@ -45,7 +45,7 @@ def update_servers(plot, servers, task_batch, t, latency, carbon_intensity, requ
         load = requests[i]
         if load == 0:
             continue
-        batch = TaskBatch(f"{task_batch.name}_{i}", requests[i], task_batch.lifetime, task_batch.region)
+        batch = RequestBatch(f"{task_batch.name}_{i}", requests[i], task_batch.lifetime, task_batch.region)
         servers[i].update_utilization(batch)
 
         data = {"latency": latency[i], "carbon_emissions": carbon_intensity[i] * load, "server": servers[i]}
