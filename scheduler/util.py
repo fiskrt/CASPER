@@ -1,8 +1,6 @@
 from collections import defaultdict
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-import time
+
 
 def save_file(name, data):
     """
@@ -21,6 +19,7 @@ def save_file(name, data):
     df = pd.DataFrame(data=res)
     df.to_csv(name + ".csv", index=False)
 
+
 def load_file(name):
     """
     Here we load a file specified by name specified by the arguments
@@ -33,14 +32,12 @@ def load_file(name):
         obj = {}
         obj["latency"] = row["latency"]
         obj["carbon_emissions"] = row["carbon_emissions"]
-        obj["server"] = {
-            "name": row["server_name"],
-            "utilization": row["server_utilization"]
-        }
+        obj["server"] = {"name": row["server_name"], "utilization": row["server_utilization"]}
         timestep = int(row["timestep"])
         data[timestep].append(obj)
 
     return data
+
 
 def load(name, resample=True, resample_metric="W"):
     df = pd.read_csv(name)
@@ -49,13 +46,3 @@ def load(name, resample=True, resample_metric="W"):
         df.set_index(["datetime"], inplace=True)
         df = df.resample(resample_metric)
     return df
-
-def load_carbon_intensity(name, resample=True, resample_metric="W"):
-    df = pd.read_csv(name)
-    if resample:
-        df.datetime = pd.to_datetime(df["datetime"], format="%Y-%m-%d %H:%M:%S.%f")
-        df.set_index(["datetime"], inplace=True)
-        df = df.resample(resample_metric)
-    return df["carbon_intensity"]
-
-
