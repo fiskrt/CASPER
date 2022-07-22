@@ -34,12 +34,13 @@ def parse_arguments(argv):
 
     parser.add_argument("-s", "--file-to-save", type=str, help="Name of file to save and plot")
 
+    # TODO: Use this or remove it
     parser.add_argument(
         "-d",
         "--requests-date",
         type=str,
         help="Date of requests in format Y-M-D. Takes for all hours that day",
-        default="plotting_data"
+        default="plotting_data",
     )
 
     return parser.parse_args(argv)
