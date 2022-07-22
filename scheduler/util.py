@@ -119,3 +119,25 @@ def date_is_valid(date):
         raise ValueError("Incorrect data format, should be YYYY-MM-DD")
 
 
+<<<<<<< HEAD
+=======
+def load_region_data(d, resample=False, resample_metric="W"):
+    '''
+
+    '''
+    data = {}
+    regions_request_rate = load_request_rate()
+    for file in os.listdir(d):
+        if file.endswith(".csv"):
+            path = os.path.join(d, file)
+            name = os.path.basename(path)
+            name, ext = os.path.splitext(name)
+            region_data = {}
+            region_data["data"] = load(path, resample=resample, resample_metric=resample_metric)
+            location = REGION_LOCATIONS[name]
+            region_request_rate = regions_request_rate[name]
+            region_data["region"] = Region(name, location, region_request_rate, carbon_intensity)
+            print(region_data["data"])
+    print("US-CAL-CISO")
+    return data
+>>>>>>> 893180b... Loads carbons intesity to the object for regions

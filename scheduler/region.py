@@ -10,6 +10,7 @@ class Region:
         self.requests_per_hour = requests_per_hour
         self.carbon_intensity = carbon_intensity
         self.offset = REGION_OFFSETS[self.name]
+        self.carbon_intensity = carbon_intensity
 
     def get_request_by_hour(self, i):
         return self.requests_per_hour.iloc[i]
