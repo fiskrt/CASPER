@@ -75,7 +75,7 @@ def schedule_servers(request_batches, server_manager, t, max_servers=10, max_lat
             )
         )
 
-    objective = plp.lpSum(x_vars[i, j] * carbon_intensities[i] for i in set_R for j in set_R)
+    objective = plp.lpSum(x_vars[i, j] * carbon_intensities[j] for i in set_R for j in set_R)
     opt_model.setObjective(objective)
     opt_model.solve()
     if opt_model.sol_status != 1:
