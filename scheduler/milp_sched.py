@@ -1,11 +1,38 @@
-# from scipy.optimize import linprog
-# from scheduler.task import TaskBatch
 import numpy as np
 import math
 import pulp as plp
 
 
 def schedule_servers(request_batches, server_manager, t, max_servers=10, max_latency=100):
+    """
+        Place servers
+    """
+    carbon_intensities = [region.carbon_intensity[t] for region in server_manager.regions]
+    latencies = np.array(
+        [[region.latency(batch.region) for region in server_manager.regions] for batch in request_batches]
+    )
+    capacities = server_manager.utilization_left_regions()
+    request_rates = [batch.load for batch in request_batches]
+    #servers_per_region = server_manager.servers_per_region()
+    servers = place_servers(request_rates, capacities, latencies, carbon_intensities, max_servers, max_latency)
+    return servers
+
+def schedule_requests(request_batches, server_manager, t, max_latency=100):
+    """
+        Schedule requests
+    """
+    carbon_intensities = [region.carbon_intensity[t] for region in server_manager.regions]
+    latencies = np.array(
+        [[region.latency(batch.region) for region in server_manager.regions] for batch in request_batches]
+    )
+    capacities = server_manager.utilization_left_regions()
+    request_rates = [batch.load for batch in request_batches]
+    servers_per_region = server_manager.servers_per_region()
+    requests = sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers_per_region, max_latency)
+    return latencies, carbon_intensities, requests
+
+
+def place_servers(request_rates, capacities, latencies, carbon_intensities, max_servers, max_latency):
     """
     Schedule the requests and get where the servers should be placed.
 
@@ -22,13 +49,6 @@ def schedule_servers(request_batches, server_manager, t, max_servers=10, max_lat
         n_servers[i] is the number of servers that should be started
         in region i
     """
-    carbon_intensities = [region.carbon_intensity[t] for region in server_manager.regions]
-    latencies = np.array(
-        [[region.latency(batch.region) for region in server_manager.regions] for batch in request_batches]
-    )
-    capacities = server_manager.utilization_left_regions()
-    request_rates = [batch.load for batch in request_batches]
-    servers_per_region = server_manager.servers_per_region()
 
     opt_model = plp.LpProblem(name="MILP Model")
     set_R = range(len(carbon_intensities))  # Region set
@@ -82,22 +102,13 @@ def schedule_servers(request_batches, server_manager, t, max_servers=10, max_lat
         print("Did not find solution!")
 
     return [int(s.varValue) for s in s_vars.values()]
+    
 
-
-# def sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers, max_latency):
-def schedule_requests(request_batches, server_manager, t, max_latency=100):
+def sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers, max_latency):
     """
     Given a fixed server placement, place the requests among
     them. req_rates are the rate FROM each region.
     """
-    # In some way (api/database) get the servers' carbon,latency, capacity
-    carbon_intensities = [region.carbon_intensity[t] for region in server_manager.regions]
-    latencies = np.array(
-        [[region.latency(batch.region) for region in server_manager.regions] for batch in request_batches]
-    )
-    capacities = server_manager.utilization_left_regions()
-    request_rates = [batch.load for batch in request_batches]
-    servers_per_region = server_manager.servers_per_region()
 
     opt_model = plp.LpProblem(name="MILP Model")
     set_R = range(len(carbon_intensities))  # Region set
@@ -107,7 +118,7 @@ def schedule_requests(request_batches, server_manager, t, max_latency=100):
     for j in set_R:
         opt_model.addConstraint(
             plp.LpConstraint(
-                e=plp.lpSum(x_vars[i, j] for i in set_R) - servers_per_region[j] * capacities[j],
+                e=plp.lpSum(x_vars[i, j] for i in set_R) - servers[j] * capacities[j],
                 sense=plp.LpConstraintLE,
                 rhs=0,
                 name=f"capacity_const{j}",
@@ -145,4 +156,4 @@ def schedule_requests(request_batches, server_manager, t, max_latency=100):
     requests = np.zeros((len(set_R), len(set_R)), dtype=int)
     for i, j in x_vars.keys():
         requests[i, j] = int(x_vars[i, j].varValue)
-    return latencies, carbon_intensities, requests
+    return requests
