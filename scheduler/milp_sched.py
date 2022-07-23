@@ -50,15 +50,7 @@ def place_servers(req_rates, capacities, latencies, carb_intensities, max_server
                 lowBound=0, name=f"s_{i}") 
                 for i in set_R}
 
-    {j : opt_model.addConstraint(
-        plp.LpConstraint(
-            e=plp.lpSum(x_vars[i,j] for i in set_R)-s_vars[j]*capacities[j],
-            sense=plp.LpConstraintLE,
-            rhs=0,
-            name=f"capacity_const{j}")
-        )
-    for j in set_R}
-
+    # Cap the number of servers
     opt_model.addConstraint(
         plp.LpConstraint(
             e=plp.lpSum(s_vars[i] for i in set_R),
@@ -67,14 +59,25 @@ def place_servers(req_rates, capacities, latencies, carb_intensities, max_server
             name=f"max_server")
         )
 
-    {j : opt_model.addConstraint(
-        plp.LpConstraint(
-            e=plp.lpSum(x_vars[i,j] for i in set_R),
-            sense=plp.LpConstraintEQ,
-            rhs=req_rates[j],
-            name=f"sched_all_reqs_const{j}")
+    # Per server max capacity
+    for j in set_R:
+        opt_model.addConstraint(
+            plp.LpConstraint(
+                e=plp.lpSum(x_vars[i,j] for i in set_R)-s_vars[j]*capacities[j],
+                sense=plp.LpConstraintLE,
+                rhs=0,
+                name=f"capacity_const{j}")
         )
-    for j in set_R}
+
+    # All requests from a region must go somewhere.
+    for i in set_R:
+        opt_model.addConstraint(
+            plp.LpConstraint(
+                e=plp.lpSum(x_vars[i,j] for j in set_R),
+                sense=plp.LpConstraintEQ,
+                rhs=req_rates[i],
+                name=f"sched_all_reqs_const{i}")
+        )
 
     # Latency constraint
     for i,j in zip(set_R, set_R):
@@ -83,8 +86,7 @@ def place_servers(req_rates, capacities, latencies, carb_intensities, max_server
                 e=x_vars[i,j]*(latencies[i][j]-max_latency),
                 sense=plp.LpConstraintLE,
                 rhs=0,
-                name=f"latency_const{j}"
-            )
+                name=f"latency_const{j}")
         )
 
     objective = plp.lpSum(x_vars[i,j] * carb_intensities[i] 
@@ -103,7 +105,7 @@ def place_servers(req_rates, capacities, latencies, carb_intensities, max_server
 def sched_reqs(req_rates, capacities, latencies, carb_intensities, servers, max_latency):
     """
         Given a fixed server placement, place the requests among
-        them.
+        them. req_rates are the rate FROM each region.
     """
     opt_model = plp.LpProblem(name="MILP Model") 
     set_R = range(len(carb_intensities)) # Region set 
@@ -111,25 +113,25 @@ def sched_reqs(req_rates, capacities, latencies, carb_intensities, servers, max_
                 lowBound=0, name=f"x_{i}_{j}") 
                 for i in set_R for j in set_R}
 
-    {j : opt_model.addConstraint(
-        plp.LpConstraint(
-            e=plp.lpSum(x_vars[i,j] for i in set_R)-servers[j]*capacities[j],
-            sense=plp.LpConstraintLE,
-            rhs=0,
-            name=f"capacity_const{j}")
+    for j in set_R:
+        opt_model.addConstraint(
+            plp.LpConstraint(
+                e=plp.lpSum(x_vars[i,j] for i in set_R)-servers[j]*capacities[j],
+                sense=plp.LpConstraintLE,
+                rhs=0,
+                name=f"capacity_const{j}")
         )
-    for j in set_R}
 
     # Sum of request rates lambda must be equal to number of 
     # requests scheduled
-    {j : opt_model.addConstraint(
-        plp.LpConstraint(
-            e=plp.lpSum(x_vars[i,j] for i in set_R),
-            sense=plp.LpConstraintEQ,
-            rhs=req_rates[j],
-            name=f"sched_all_reqs_const{j}")
+    for i in set_R:
+        opt_model.addConstraint(
+            plp.LpConstraint(
+                e=plp.lpSum(x_vars[i,j] for j in set_R),
+                sense=plp.LpConstraintEQ,
+                rhs=req_rates[i],
+                name=f"sched_all_reqs_const{i}")
         )
-    for j in set_R}
 
     # Latency constraint
     for i,j in zip(set_R, set_R):
@@ -138,21 +140,22 @@ def sched_reqs(req_rates, capacities, latencies, carb_intensities, servers, max_
                 e=x_vars[i,j]*(latencies[i][j]-max_latency),
                 sense=plp.LpConstraintLE,
                 rhs=0,
-                name=f"latency_const{j}"
-            )
+                name=f"latency_const{j}")
         )
 
-    objective = plp.lpSum(x_vars[i,j] * carb_intensities[i] 
+    objective = plp.lpSum(x_vars[i,j] * carb_intensities[j] 
                             for i in set_R 
                             for j in set_R)
     opt_model.setObjective(objective) 
     opt_model.solve()
     if opt_model.sol_status != 1:
         print('Did not find sol!')
-    requests = np.zeros((len(set_R), len(set_R)))
+    requests = np.zeros((len(set_R), len(set_R)), dtype=int)
     for i,j in x_vars.keys():
-        requests[i,j]= x_vars[i,j].varValue
+        requests[i,j]= int(x_vars[i,j].varValue)
     return requests
-#a = sched_reqs([10,10,11]*10, [10,10,10]*10, [[i for i in range(30)] for _ in range(30)]*10,
-             [100, 100, 100]*10, [10,10,10]*10, 20)
+
+#def sched_reqs(req_rates, capacities, latencies, carb_intensities, servers, max_latency):
+#a = sched_reqs([3,6,10], [10,5,150], [[i for i in range(3)] for _ in range(3)],
+#             [1000, 10000, 100], [1,1,1], 20)
 #print(a)
