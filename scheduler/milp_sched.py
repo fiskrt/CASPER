@@ -13,9 +13,10 @@ def schedule_servers(request_batches, server_manager, t, max_servers=10, max_lat
     )
     capacities = server_manager.utilization_left_regions()
     request_rates = [batch.load for batch in request_batches]
-    #servers_per_region = server_manager.servers_per_region()
+    # servers_per_region = server_manager.servers_per_region()
     servers = place_servers(request_rates, capacities, latencies, carbon_intensities, max_servers, max_latency)
     return servers
+
 
 def schedule_requests(request_batches, server_manager, t, max_latency=100):
     """
@@ -27,7 +28,7 @@ def schedule_requests(request_batches, server_manager, t, max_latency=100):
     )
     capacities = server_manager.utilization_left_regions()
     request_rates = [batch.load for batch in request_batches]
-#    servers_per_region = server_manager.servers_per_region()
+    #    servers_per_region = server_manager.servers_per_region()
     requests = sched_reqs(request_rates, capacities, latencies, carbon_intensities, max_latency)
     return latencies, carbon_intensities, requests
 
@@ -97,12 +98,12 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
 
     objective = plp.lpSum(x_vars[i, j] * carbon_intensities[j] for i in set_R for j in set_R)
     opt_model.setObjective(objective)
-    opt_model.solve()
+    opt_model.solve(plp.PULP_CBC_CMD(msg=0))
     if opt_model.sol_status != 1:
         print("Did not find solution!")
 
     return [int(s.varValue) for s in s_vars.values()]
-    
+
 
 def sched_reqs(request_rates, capacities, latencies, carbon_intensities, max_latency):
     """
@@ -150,7 +151,7 @@ def sched_reqs(request_rates, capacities, latencies, carbon_intensities, max_lat
 
     objective = plp.lpSum(x_vars[i, j] * carbon_intensities[j] for i in set_R for j in set_R)
     opt_model.setObjective(objective)
-    opt_model.solve()
+    opt_model.solve(plp.PULP_CBC_CMD(msg=0))
     if opt_model.sol_status != 1:
         print("Did not find solution!")
     requests = np.zeros((len(set_R), len(set_R)), dtype=int)
