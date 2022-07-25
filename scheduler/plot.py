@@ -60,6 +60,7 @@ class Plot:
         df_inner = self.build_df()
         df_inner = df_inner.groupby("timestep")
         fig = plt.figure(figsize=(18, 14))
+        fig.tight_layout()
         dfs = [
             df_inner["mean_latency"].mean(),
             df_inner[[f"{name}_latency" for name in REGION_NAMES]].mean(),
@@ -70,9 +71,23 @@ class Plot:
             df_inner["total_dropped_requests"].mean(),
             df_inner[[f"{name}_dropped_requests" for name in REGION_NAMES]].mean(),
         ]
+        titles = [
+            "latency",
+            "latency",
+            "carbon_emissions",
+            "carbon_emissions",
+            "requests",
+            "requests",
+            "dropped",
+            "dropped",
+        ]
         i = 0
         for df in dfs:
             ax = plt.subplot(2, 4, i + 1)
-            df.plot(ax=ax)
+            ax = df.plot(ax=ax)
+            if len(df.shape) > 1 and df.shape[1] > 0:
+                ax.legend(REGION_NAMES)
+            ax.set_xlabel("Hours (h)")
+            ax.set_title(titles[i])
             i += 1
         plt.show()
