@@ -16,8 +16,9 @@ def main():
     """
     random.seed(1234)
     conf = parse_arguments(sys.argv[1:])
-    # if conf.file_to_load:
-    #     data = load_file(conf.file_to_load)
+
+    # if conf.load:
+    #     data = load_file(conf.load)
     #     plot = Plot(conf, data=data)
     #     plot.plot()
     #     exit()
@@ -29,14 +30,15 @@ def main():
 
     move(conf, server_manager, 0)
 
-    for t in range(conf.timesteps):
+    for t in range(conf.timesteps + 1):
         for _ in range(request_update_interval):
             # get number of requests for timeframe
             # TODO: Change this to dynamic requests
             batches = []
             for region in server_manager.regions:
                 rate = region.get_requests_per_hour(t) // request_update_interval
-                # rate = 100
+                if conf.rate:
+                    rate = conf.rate
                 batch = RequestBatch("", rate, region)
                 batches.append(batch)
 
@@ -71,7 +73,9 @@ def move(conf, server_manager, t):
         batch = RequestBatch("", rate, region)
         batches.append(batch)
 
-    servers_per_region = schedule_servers(batches, server_manager, t, max_latency=conf.latency)
+    servers_per_region = schedule_servers(
+        batches, server_manager, t, max_latency=conf.latency, max_servers=conf.max_servers
+    )
     # move servers to regions according to scheduling estimation the next hour
     server_manager.move(servers_per_region)
 

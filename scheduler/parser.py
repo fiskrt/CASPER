@@ -31,16 +31,14 @@ def parse_arguments(argv):
     )
 
     parser.add_argument(
-        "-l",
-        "--file-to-load",
+        "--load",
         type=str,
         help="Name of file to load and plot",
     )
 
     parser.add_argument(
-        "-s",
         "--save",
-        help="Name of file to save and plot",
+        help="Name of file to save",
         action="store_true",
     )
 
@@ -60,11 +58,25 @@ def parse_arguments(argv):
     )
 
     parser.add_argument(
-        "-o",
+        "-l",
         "--latency",
         type=int,
-        help="Latency constraint",
+        help="Maximum latency allowed",
         default=50,
+    )
+
+    parser.add_argument(
+        "-m",
+        "--max-servers",
+        type=int,
+        help="Maximum pool of servers",
+        default=4,
+    )
+
+    parser.add_argument(
+        "--rate",
+        type=int,
+        help="Specify a constant rate",
     )
 
     return parser.parse_args(argv)

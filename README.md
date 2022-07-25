@@ -20,18 +20,27 @@ python -m scheduler --help
 ```
 
 ```
-usage: __main__.py [-h] [-a {latency_greedy,carbon_greedy,carbon_aware}]
-                   [-dt TIMESTEPS] [-ds TASKS_PER_TIMESTEP]
+usage: __main__.py [-h] [-a {latency_greedy,carbon_greedy,carbon_aware}] [-t TIMESTEPS] [-r [0-60]] [--load LOAD] [--save] [-d START_DATE] [-v] [-l LATENCY] [-m MAX_SERVERS]
+                   [--rate RATE]
 
 optional arguments:
   -h, --help            show this help message and exit
   -a {latency_greedy,carbon_greedy,carbon_aware}, --algorithm {latency_greedy,carbon_greedy,carbon_aware}
                         The scheduling algorithm to use
-  -dt TIMESTEPS, --timesteps TIMESTEPS
+  -t TIMESTEPS, --timesteps TIMESTEPS
                         The total number of hours
-  -ds TASKS_PER_TIMESTEP, --tasks-per-timestep TASKS_PER_TIMESTEP
-                        The number of times per timestep that task batches are
-                        generated
+  -r [0-60], --request-update-interval [0-60]
+                        The number of minutes between each scheduling
+  --load LOAD           Name of file to load and plot
+  --save                Name of file to save
+  -d START_DATE, --start-date START_DATE
+                        Start date in ISO format (YYYY-MM-DD)
+  -v, --verbose         Print information for every timestep
+  -l LATENCY, --latency LATENCY
+                        Maximum latency allowed
+  -m MAX_SERVERS, --max-servers MAX_SERVERS
+                        Maximum pool of servers
+  --rate RATE           Specify a constant rate
 ```
 
 ## Testing ![Test](https://github.com/Zonotora/umass/workflows/Test/badge.svg?branch=main&event=push)
