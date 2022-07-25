@@ -58,16 +58,17 @@ class Plot:
 
     def plot(self):
         df_inner = self.build_df()
+        df_inner = df_inner.groupby("timestep")
         fig = plt.figure(figsize=(18, 14))
         dfs = [
-            df_inner["mean_latency"],
-            df_inner[[f"{name}_latency" for name in REGION_NAMES]],
-            df_inner["mean_carbon_emissions"],
-            df_inner[[f"{name}_carbon_emissions" for name in REGION_NAMES]],
-            df_inner["total_requests"],
-            df_inner[[f"{name}_requests" for name in REGION_NAMES]],
-            df_inner["total_dropped_requests"],
-            df_inner[[f"{name}_dropped_requests" for name in REGION_NAMES]],
+            df_inner["mean_latency"].mean(),
+            df_inner[[f"{name}_latency" for name in REGION_NAMES]].mean(),
+            df_inner["mean_carbon_emissions"].mean(),
+            df_inner[[f"{name}_carbon_emissions" for name in REGION_NAMES]].mean(),
+            df_inner["total_requests"].mean(),
+            df_inner[[f"{name}_requests" for name in REGION_NAMES]].mean(),
+            df_inner["total_dropped_requests"].mean(),
+            df_inner[[f"{name}_dropped_requests" for name in REGION_NAMES]].mean(),
         ]
         i = 0
         for df in dfs:

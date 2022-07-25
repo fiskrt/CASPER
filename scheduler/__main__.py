@@ -58,8 +58,6 @@ def main():
     if conf.save:
         save_file(plot)
 
-
-
     plot.plot()
 
 
