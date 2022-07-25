@@ -52,10 +52,13 @@ def main():
 
         move(server_manager, t + 1)
 
+        if conf.verbose:
+            ui(t, requests_per_region, server_manager.servers, server_manager.servers_per_region())
+
     if conf.save:
         save_file(plot)
 
-    ui(t, requests_per_region, server_manager.servers, server_manager.servers_per_region())
+
 
     plot.plot()
 

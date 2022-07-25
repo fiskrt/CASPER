@@ -52,4 +52,11 @@ def parse_arguments(argv):
         default="2021-01-01",
     )
 
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Print information for every timestep",
+        action="store_true",
+    )
+
     return parser.parse_args(argv)
