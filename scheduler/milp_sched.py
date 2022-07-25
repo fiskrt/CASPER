@@ -5,7 +5,11 @@ import pulp as plp
 
 def schedule_servers(request_batches, server_manager, t, max_servers=10, max_latency=100):
     """
-    Place servers
+        Place servers
+
+        Setting max_latency to infinity makes algorithm carbon greedy.
+        Setting max_latency to 0 makes it always choose all servers in 
+        the same region
     """
     carbon_intensities = [region.carbon_intensity[t] for region in server_manager.regions]
     latencies = np.array(
@@ -13,14 +17,18 @@ def schedule_servers(request_batches, server_manager, t, max_servers=10, max_lat
     )
     capacities = server_manager.utilization_left_regions()
     request_rates = [batch.load for batch in request_batches]
-    # servers_per_region = server_manager.servers_per_region()
+
     servers = place_servers(request_rates, capacities, latencies, carbon_intensities, max_servers, max_latency)
     return servers
 
 
 def schedule_requests(request_batches, server_manager, t, max_latency=100):
     """
-    Schedule requests
+        Schedule requests
+
+        Setting max_latency to infinity makes algorithm carbon greedy.
+        Setting max_latency to 0 makes it always choose all servers in 
+        the same region
     """
     carbon_intensities = [region.carbon_intensity[t] for region in server_manager.regions]
     latencies = np.array(
@@ -28,7 +36,6 @@ def schedule_requests(request_batches, server_manager, t, max_latency=100):
     )
     capacities = server_manager.utilization_left_regions()
     request_rates = [batch.load for batch in request_batches]
-    #    servers_per_region = server_manager.servers_per_region()
     requests = sched_reqs(request_rates, capacities, latencies, carbon_intensities, max_latency)
     return latencies, carbon_intensities, requests
 
