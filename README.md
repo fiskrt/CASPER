@@ -1,5 +1,9 @@
-# Carbon aware scheduler
+# Carbon Aware Scheduler and ProvisionER (CASPER)
 
+Using predictions of request during the next hour we calculate how the servers should be placed to handle
+the requests while minimizing carbon and satsifying latency constraint.
+
+Once servers are placed, the scheduler distributes the request between the regions such that carbon is minimized.
 
 
 ## Installation
