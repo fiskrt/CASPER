@@ -27,8 +27,8 @@ def schedule_requests(request_batches, server_manager, t, max_latency=100):
     )
     capacities = server_manager.utilization_left_regions()
     request_rates = [batch.load for batch in request_batches]
-    servers_per_region = server_manager.servers_per_region()
-    requests = sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers_per_region, max_latency)
+#    servers_per_region = server_manager.servers_per_region()
+    requests = sched_reqs(request_rates, capacities, latencies, carbon_intensities, max_latency)
     return latencies, carbon_intensities, requests
 
 
@@ -38,7 +38,7 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
 
     Args:
         param1: req_rates[i] is the number of requests from region i
-        param2: capacities[i] is the capacity of servers in region i
+        param2: capacities[i] is the aggregate capacity of servers in region i
         param3: latencies[i][j] is the latency from region i to j
         param4: carb_intensities[i] is the carb intensity in region i
         param5: max_servers is the maximum number of servers
@@ -104,7 +104,7 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
     return [int(s.varValue) for s in s_vars.values()]
     
 
-def sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers, max_latency):
+def sched_reqs(request_rates, capacities, latencies, carbon_intensities, max_latency):
     """
     Given a fixed server placement, place the requests among
     them. req_rates are the rate FROM each region.
@@ -118,7 +118,7 @@ def sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers
     for j in set_R:
         opt_model.addConstraint(
             plp.LpConstraint(
-                e=plp.lpSum(x_vars[i, j] for i in set_R) - servers[j] * capacities[j],
+                e=plp.lpSum(x_vars[i, j] for i in set_R) - capacities[j],
                 sense=plp.LpConstraintLE,
                 rhs=0,
                 name=f"capacity_const{j}",
