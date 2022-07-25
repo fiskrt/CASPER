@@ -59,4 +59,12 @@ def parse_arguments(argv):
         action="store_true",
     )
 
+    parser.add_argument(
+        "-o",
+        "--latency",
+        type=int,
+        help="Latency constraint",
+        default=50,
+    )
+
     return parser.parse_args(argv)

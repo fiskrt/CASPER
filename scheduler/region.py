@@ -26,7 +26,8 @@ class Region:
         return format(self.name, __format_spec)
 
 
-def load_regions(date):
+def load_regions(conf):
+    date = conf.start_date
     regions = []
     d = "api"
     for name in REGION_NAMES:
@@ -36,8 +37,8 @@ def load_regions(date):
         offset = REGION_OFFSETS[name]
 
         request_path = os.path.join(d, "requests.csv")
-        requests_per_hour = load_request_rate(request_path, offset, date)
-        carbon_intensity = load_carbon_intensity(path, offset, date)
+        requests_per_hour = load_request_rate(request_path, offset, conf, date)
+        carbon_intensity = load_carbon_intensity(path, offset, conf, date)
         region = Region(name, location, carbon_intensity, requests_per_hour, offset)
         regions.append(region)
     return regions

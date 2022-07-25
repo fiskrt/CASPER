@@ -27,7 +27,7 @@ def main():
 
     request_update_interval = 60 // conf.request_update_interval
 
-    move(server_manager, 0)
+    move(conf, server_manager, 0)
 
     for t in range(conf.timesteps):
         for _ in range(request_update_interval):
@@ -36,11 +36,14 @@ def main():
             batches = []
             for region in server_manager.regions:
                 rate = region.get_requests_per_hour(t) // request_update_interval
+                # rate = 100
                 batch = RequestBatch("", rate, region)
                 batches.append(batch)
 
             # call the scheduling algorithm
-            latency, carbon_intensity, requests_per_region = schedule_requests(batches, server_manager, t)
+            latency, carbon_intensity, requests_per_region = schedule_requests(
+                batches, server_manager, t, max_latency=conf.latency
+            )
             # send requests to servers
             dropped_requests_per_region = server_manager.send(requests_per_region)
             # update_plot(plot, t, latency, carbon_intensity, requests_per_region)
@@ -50,7 +53,7 @@ def main():
             # we can do this as requests are managed instantaneously for each server
             server_manager.reset()
 
-        move(server_manager, t + 1)
+        move(conf, server_manager, t + 1)
 
         if conf.verbose:
             ui(t, requests_per_region, server_manager.servers, server_manager.servers_per_region())
@@ -61,14 +64,14 @@ def main():
     plot.plot()
 
 
-def move(server_manager, t):
+def move(conf, server_manager, t):
     batches = []
     for region in server_manager.regions:
-        rate = region.get_requests_per_hour(t + 1)
+        rate = region.get_requests_per_hour(t)
         batch = RequestBatch("", rate, region)
         batches.append(batch)
 
-    servers_per_region = schedule_servers(batches, server_manager, t)
+    servers_per_region = schedule_servers(batches, server_manager, t, max_latency=conf.latency)
     # move servers to regions according to scheduling estimation the next hour
     server_manager.move(servers_per_region)
 

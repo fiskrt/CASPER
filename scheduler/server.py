@@ -39,7 +39,7 @@ class Server:
 
 class ServerManager:
     def __init__(self, conf):
-        self.regions = load_regions(conf.start_date)
+        self.regions = load_regions(conf)
         # TODO: Think about initialization of servers
         self.servers = [Server(SERVER_CAPACITY, region) for region in self.regions]
 

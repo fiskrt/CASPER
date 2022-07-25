@@ -3,7 +3,7 @@ import math
 import pulp as plp
 
 
-def schedule_servers(request_batches, server_manager, t, max_servers=10, max_latency=100):
+def schedule_servers(request_batches, server_manager, t, max_servers=4, max_latency=100):
     """
         Place servers
 

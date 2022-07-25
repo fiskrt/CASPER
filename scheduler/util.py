@@ -48,7 +48,7 @@ def load_electricity_map_with_resample(path, metric="W"):
     return df
 
 
-def load_carbon_intensity(path, offset, date="2021-01-01"):
+def load_carbon_intensity(path, offset, conf, date="2021-01-01"):
     """
     Loads carbon intensity for a Region taking time offset to california into account
     for a certain date.
@@ -62,7 +62,7 @@ def load_carbon_intensity(path, offset, date="2021-01-01"):
 
     start = index[0] + offset
     # TODO: Consider more than just 24 hours ahead
-    end = start + 24 + 24
+    end = start + conf.timesteps + 24
 
     assert end < len(df), "The selected interval overflows the electricity map data"
 
@@ -72,7 +72,7 @@ def load_carbon_intensity(path, offset, date="2021-01-01"):
     return df
 
 
-def load_request_rate(path, offset, date="2021-01-01"):
+def load_request_rate(path, offset, conf, date="2021-01-01"):
     """
     Loads request rate data for a region and returns its data.
     """
@@ -85,19 +85,23 @@ def load_request_rate(path, offset, date="2021-01-01"):
 
     start = index[0] + offset
     # TODO: Consider more than just 24 hours ahead
-    end = start + 24 + 24
+    end = start + conf.timesteps + 24
     assert end < len(df), "The selected interval overflows the reqeust rate data"
 
     df = df["requests"].iloc[start:end].reset_index(drop=True)
 
     return df
 
+
 def ui(timestep, request_per_region, servers, servers_per_regions_list):
     print(f"______________________________________ \n TIMESTEP: {timestep}")
     print("Requests per region:")
     [print(f"{REGION_NAMES[i]} - {request[0]}") for i, request in enumerate(request_per_region)]
     print(" \n SERVERS PER REGION: \n")
-    [print(f"{REGION_NAMES[i]} - {servers_per_region}") for i, servers_per_region in enumerate(servers_per_regions_list)]
+    [
+        print(f"{REGION_NAMES[i]} - {servers_per_region}")
+        for i, servers_per_region in enumerate(servers_per_regions_list)
+    ]
     print("\n Server objects in ServerManager: ")
     print(servers)
     print("______________________________________")
