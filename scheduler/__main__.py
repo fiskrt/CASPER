@@ -28,9 +28,8 @@ def main():
 
     request_update_interval = 60 // conf.request_update_interval
 
-    move(conf, server_manager, 0)
-
     for t in range(conf.timesteps + 1):
+        move(conf, server_manager, t)
         for _ in range(request_update_interval):
             # get number of requests for timeframe
             # TODO: Change this to dynamic requests
@@ -54,8 +53,6 @@ def main():
             # reset server utilization for every server before scheduling requests again
             # we can do this as requests are managed instantaneously for each server
             server_manager.reset()
-
-        move(conf, server_manager, t + 1)
 
         if conf.verbose:
             ui(t, requests_per_region, server_manager.servers, server_manager.servers_per_region())

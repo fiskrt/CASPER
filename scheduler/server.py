@@ -16,7 +16,7 @@ class Server:
         self.region = region
 
     def __repr__(self) -> str:
-        return f"Server({self.region})"
+        return f"Server({self.region}, capacity={self.capacity}, utilization={self.utilization})"
 
     def utilization_left(self):
         return self.capacity - self.utilization
@@ -40,8 +40,7 @@ class Server:
 class ServerManager:
     def __init__(self, conf):
         self.regions = load_regions(conf)
-        # TODO: Think about initialization of servers
-        self.servers = [Server(SERVER_CAPACITY, region) for region in self.regions]
+        self.servers = []
 
     def reset(self):
         """

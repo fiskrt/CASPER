@@ -2,20 +2,22 @@ import numpy as np
 import math
 import pulp as plp
 
+from scheduler.constants import SERVER_CAPACITY
+
 
 def schedule_servers(request_batches, server_manager, t, max_servers=4, max_latency=100):
     """
-        Place servers
+    Place servers
 
-        Setting max_latency to infinity makes algorithm carbon greedy.
-        Setting max_latency to 0 makes it always choose all servers in 
-        the same region
+    Setting max_latency to infinity makes algorithm carbon greedy.
+    Setting max_latency to 0 makes it always choose all servers in
+    the same region
     """
     carbon_intensities = [region.carbon_intensity[t] for region in server_manager.regions]
     latencies = np.array(
         [[region.latency(batch.region) for region in server_manager.regions] for batch in request_batches]
     )
-    capacities = server_manager.utilization_left_regions()
+    capacities = [SERVER_CAPACITY] * len(server_manager.regions)
     request_rates = [batch.load for batch in request_batches]
 
     servers = place_servers(request_rates, capacities, latencies, carbon_intensities, max_servers, max_latency)
@@ -24,17 +26,17 @@ def schedule_servers(request_batches, server_manager, t, max_servers=4, max_late
 
 def schedule_requests(request_batches, server_manager, t, max_latency=100):
     """
-        Schedule requests
+    Schedule requests
 
-        Setting max_latency to infinity makes algorithm carbon greedy.
-        Setting max_latency to 0 makes it always choose all servers in 
-        the same region
+    Setting max_latency to infinity makes algorithm carbon greedy.
+    Setting max_latency to 0 makes it always choose all servers in
+    the same region
     """
     carbon_intensities = [region.carbon_intensity[t] for region in server_manager.regions]
     latencies = np.array(
         [[region.latency(batch.region) for region in server_manager.regions] for batch in request_batches]
     )
-    capacities = server_manager.utilization_left_regions()
+    capacities = [SERVER_CAPACITY] * len(server_manager.regions)
     request_rates = [batch.load for batch in request_batches]
     requests = sched_reqs(request_rates, capacities, latencies, carbon_intensities, max_latency)
     return latencies, carbon_intensities, requests
