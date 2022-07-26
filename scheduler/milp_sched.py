@@ -59,7 +59,7 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
         in region i
     """
 
-    opt_model = plp.LpProblem(name="MILP Model")
+    opt_model = plp.LpProblem(name="model")
     n_regions = len(carbon_intensities)
     set_R = range(n_regions)  # Region set
     x_vars = {(i, j): plp.LpVariable(cat=plp.LpInteger, lowBound=0, name=f"x_{i}_{j}") for i in set_R for j in set_R}
