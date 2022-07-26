@@ -48,7 +48,7 @@ def main():
             # send requests to servers
             dropped_requests_per_region = server_manager.send(requests_per_region)
             # update_plot(plot, t, latency, carbon_intensity, requests_per_region)
-            plot.add(latency, carbon_intensity, requests_per_region, dropped_requests_per_region, t)
+            plot.add(server_manager, latency, carbon_intensity, requests_per_region, dropped_requests_per_region, t)
 
             # reset server utilization for every server before scheduling requests again
             # we can do this as requests are managed instantaneously for each server

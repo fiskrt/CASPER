@@ -1,6 +1,7 @@
 from scheduler.constants import REGION_NAMES, SERVER_CAPACITY
 from scheduler.region import Region, load_regions
 from scheduler.request import RequestBatch
+import numpy as np
 import logging
 
 
@@ -64,6 +65,10 @@ class ServerManager:
             count[server.region.name] += 1
 
         return [count[region] for region in REGION_NAMES]
+
+    def capacity_per_region(self):
+        servers = np.array(self.servers_per_region())
+        return servers * SERVER_CAPACITY
 
     def send(self, requests_per_region):
         """
