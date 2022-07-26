@@ -2,7 +2,7 @@ from scheduler.server import ServerManager
 from scheduler.request import RequestBatch
 from scheduler.parser import parse_arguments
 from scheduler.plot import Plot
-from scheduler.util import save_file, load_file, ui
+from scheduler.util import save_file, ui
 from scheduler.milp_sched import schedule_requests, schedule_servers
 import sys
 import random

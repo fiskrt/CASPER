@@ -1,10 +1,8 @@
-from collections import defaultdict
 from datetime import datetime, timezone
-from grpc import server
 import pandas as pd
 import os
 
-from scheduler.constants import REGION_NAMES, REGION_OFFSETS
+from scheduler.constants import REGION_NAMES
 
 
 def save_file(plot):

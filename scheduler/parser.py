@@ -38,7 +38,7 @@ def parse_arguments(argv):
 
     parser.add_argument(
         "--save",
-        help="Name of file to save",
+        help="Save file to /saved with the following format YYYY-MM-DD_hh:mm:ss",
         action="store_true",
     )
 

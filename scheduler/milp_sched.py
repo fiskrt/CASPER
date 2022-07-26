@@ -1,5 +1,4 @@
 import numpy as np
-import math
 import pulp as plp
 
 from scheduler.constants import SERVER_CAPACITY
@@ -60,7 +59,7 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
         in region i
     """
 
-    opt_model = plp.LpProblem(name="MILP Model")
+    opt_model = plp.LpProblem(name="model")
     set_R = range(len(carbon_intensities))  # Region set
     x_vars = {(i, j): plp.LpVariable(cat=plp.LpInteger, lowBound=0, name=f"x_{i}_{j}") for i in set_R for j in set_R}
     s_vars = {i: plp.LpVariable(cat=plp.LpInteger, lowBound=0, name=f"s_{i}") for i in set_R}
@@ -120,7 +119,7 @@ def sched_reqs(request_rates, capacities, latencies, carbon_intensities, max_lat
     them. req_rates are the rate FROM each region.
     """
 
-    opt_model = plp.LpProblem(name="MILP Model")
+    opt_model = plp.LpProblem(name="model")
     set_R = range(len(carbon_intensities))  # Region set
     x_vars = {(i, j): plp.LpVariable(cat=plp.LpInteger, lowBound=0, name=f"x_{i}_{j}") for i in set_R for j in set_R}
     s_vars = {i: plp.LpVariable(cat=plp.LpInteger, lowBound=0, name=f"s_{i}") for i in set_R}

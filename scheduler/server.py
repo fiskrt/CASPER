@@ -1,6 +1,5 @@
 from scheduler.constants import REGION_NAMES, SERVER_CAPACITY
 from scheduler.region import Region, load_regions
-from scheduler.request import RequestBatch
 import numpy as np
 import logging
 
