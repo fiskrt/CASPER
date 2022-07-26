@@ -1,0 +1,61 @@
+import pytest
+from scheduler.server import ServerManager
+from scheduler.region import Region
+from scheduler.parser import parse_arguments
+from scheduler.constants import REGION_NAMES, SERVER_CAPACITY
+from scheduler.__main__ import move
+
+import numpy as np
+import pandas as pd
+
+def test_manager():
+    conf = parse_arguments([])
+    rqs = pd.DataFrame(data=[1])
+    #Create regions
+    regions = [Region(name=region, location=0, carbon_intensity=10, requests_per_hour=rqs, offset=0) for region in REGION_NAMES]
+    server_manager = ServerManager(conf, regions=[])
+
+    #Assert regions are not initiated
+    assert len(server_manager.regions) == 0
+
+    server_manager = ServerManager(conf, regions=regions)
+
+    #Assert n.o. regions correct when initiated
+    assert len(server_manager.regions) == len(REGION_NAMES)
+
+    servers_per_region = server_manager.servers_per_region()
+    correct_servers_per_region = [0, 0, 0, 0]
+
+    #Assert servers are not placed in the beginning
+    assert servers_per_region == correct_servers_per_region
+
+    server_manager.move([1, 1, 1, 1])
+
+    #Assert servers are placed correctly
+    assert server_manager.servers_per_region() == [1, 1, 1, 1]
+
+    #Assert they are unutilized
+    assert server_manager.utilization_left_regions() == [SERVER_CAPACITY for _ in range(4)]
+
+    dropped_requests_per_region = []
+    for i in range(len(REGION_NAMES)):
+        region = REGION_NAMES[i]
+        requests = int(rqs[0])
+        print(requests)
+        # All servers in the {region} we should send our request batches
+        servers = [s for s in server_manager.servers if s.region.name == region]
+        # Craete request batches that are destined to {region}
+        server_loads, dropped_requests = server_manager.build_server_loads(servers, requests)
+        dropped_requests_per_region.append(dropped_requests)
+        for server, load in server_loads:
+            server.push(load)
+
+    #Assert no requests were dropped
+    assert dropped_requests_per_region == [0, 0, 0, 0]
+
+    #Assert each server has a load of an task = 1
+    assert server_manager.utilization_left_regions() == [SERVER_CAPACITY - 1 for _ in range(4)]
+
+
+
+
