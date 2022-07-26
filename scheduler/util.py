@@ -9,11 +9,11 @@ def save_file(plot):
     """
     Here we save the data of a file by name specified of the arguments
     """
-    df_inner = plot.build_df()
+    df = plot.build_df()
     date = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
     if not os.path.exists("saved"):
         os.makedirs("saved")
-    df_inner.to_csv(f"saved/{date}_inner.csv", index=False)
+    df.to_csv(f"saved/{date}.csv", index=False)
 
 
 def load_file(name):

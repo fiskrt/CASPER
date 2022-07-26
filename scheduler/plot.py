@@ -9,6 +9,7 @@ class Plot:
         self.conf = conf
         self.columns = [
             "timestep",
+            "interval",
             "mean_latency",
             *[f"{name}_latency" for name in REGION_NAMES],
             "mean_carbon_emissions",
@@ -24,7 +25,9 @@ class Plot:
         ]
         self.data = []
 
-    def add(self, server_manager, latency, carbon_intensity, requests_per_region, dropped_requests_per_region, t):
+    def add(
+        self, server_manager, latency, carbon_intensity, requests_per_region, dropped_requests_per_region, t, interval
+    ):
         total_requests_per_region = np.sum(requests_per_region, axis=0)
         mask = total_requests_per_region != 0
 
@@ -47,6 +50,7 @@ class Plot:
 
         frame = (
             t,
+            interval,
             mean_latency,
             *latencies,
             mean_carbon_emissions,
@@ -71,7 +75,7 @@ class Plot:
     def plot(self):
         df = self.build_df()
         df = df.groupby("timestep")
-        fig = plt.figure(figsize=(18, 14))
+        fig = plt.figure(figsize=(14, 8))
         fig.tight_layout()
         dfs = [
             df["mean_latency"].mean(),
@@ -88,26 +92,31 @@ class Plot:
             df[[f"{name}_servers" for name in REGION_NAMES]].mean(),
         ]
         titles = [
+            "mean_latency",
             "latency",
-            "latency",
+            "mean_carbon_emissions",
             "carbon_emissions",
-            "carbon_emissions",
+            "total_requests",
             "requests",
-            "requests",
+            "total_dropped",
             "dropped",
-            "dropped",
+            "mean_utilization",
             "utilization",
-            "utilization",
-            "servers",
+            "total_servers",
             "servers",
         ]
         i = 0
         for df in dfs:
             ax = plt.subplot(3, 4, i + 1)
-            ax = df.plot(ax=ax)
             if len(df.shape) > 1 and df.shape[1] > 0:
-                ax.legend(REGION_NAMES)
-            ax.set_xlabel("Hours (h)")
+                ax = df.plot(ax=ax)
+            else:
+                ax = df.plot(ax=ax, color="y")
+            # ax.set_xlabel("Hours (h)")
+            ax.set_xlabel("")
             ax.set_title(titles[i])
+            ax.legend().remove()
             i += 1
+
+        fig.legend(["mean"] + REGION_NAMES, loc="upper center", bbox_to_anchor=(0.5, 0.07), ncol=3)
         plt.show()
