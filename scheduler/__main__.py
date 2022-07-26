@@ -32,14 +32,7 @@ def main():
         move(conf, server_manager, t)
         for _ in range(request_update_interval):
             # get number of requests for timeframe
-            # TODO: Change this to dynamic requests
-            batches = []
-            for region in server_manager.regions:
-                rate = region.get_requests_per_hour(t) // request_update_interval
-                if conf.rate:
-                    rate = conf.rate
-                batch = RequestBatch("", rate, region)
-                batches.append(batch)
+            batches = build_batches(conf, server_manager, t, request_update_interval=request_update_interval)
 
             # call the scheduling algorithm
             latency, carbon_intensity, requests_per_region = schedule_requests(
@@ -63,13 +56,22 @@ def main():
     plot.plot()
 
 
-def move(conf, server_manager, t):
+def build_batches(conf, server_manager, t, request_update_interval=None):
     batches = []
     for region in server_manager.regions:
         rate = region.get_requests_per_hour(t)
+        if conf.rate:
+            rate = conf.rate
+        if request_update_interval is not None:
+            rate //= request_update_interval
+        # TODO: Add id to request batch
         batch = RequestBatch("", rate, region)
         batches.append(batch)
+    return batches
 
+
+def move(conf, server_manager, t):
+    batches = build_batches(conf, server_manager, t)
     servers_per_region = schedule_servers(
         conf, batches, server_manager, t, max_latency=conf.latency, max_servers=conf.max_servers
     )

@@ -76,7 +76,7 @@ def parse_arguments(argv):
     parser.add_argument(
         "--rate",
         type=int,
-        help="Specify a constant rate",
+        help="Specify a constant request rate per hour",
     )
 
     parser.add_argument(
