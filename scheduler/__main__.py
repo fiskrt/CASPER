@@ -29,19 +29,21 @@ def main():
     request_update_interval = 60 // conf.request_update_interval
 
     for t in range(conf.timesteps + 1):
+        # Move all the servers given the next hour's requests rates
         move(conf, server_manager, t)
-        for _ in range(request_update_interval):
+
+        for i in range(request_update_interval):
             # get number of requests for timeframe
             batches = build_batches(conf, server_manager, t, request_update_interval=request_update_interval)
 
             # call the scheduling algorithm
             latency, carbon_intensity, requests_per_region = schedule_requests(
-                conf, batches, server_manager, t, max_latency=conf.latency
+                conf, batches, server_manager, t, request_update_interval, max_latency=conf.latency
             )
             # send requests to servers
             dropped_requests_per_region = server_manager.send(requests_per_region)
             # update_plot(plot, t, latency, carbon_intensity, requests_per_region)
-            plot.add(server_manager, latency, carbon_intensity, requests_per_region, dropped_requests_per_region, t)
+            plot.add(server_manager, latency, carbon_intensity, requests_per_region, dropped_requests_per_region, t, i)
 
             # reset server utilization for every server before scheduling requests again
             # we can do this as requests are managed instantaneously for each server
@@ -62,7 +64,7 @@ def build_batches(conf, server_manager, t, request_update_interval=None):
         rate = region.get_requests_per_hour(t)
         if conf.rate:
             rate = conf.rate
-        if request_update_interval is not None:
+        if request_update_interval:
             rate //= request_update_interval
         # TODO: Add id to request batch
         batch = RequestBatch("", rate, region)

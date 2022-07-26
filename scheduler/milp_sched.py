@@ -22,7 +22,7 @@ def schedule_servers(conf, request_batches, server_manager, t, max_servers=4, ma
     return servers
 
 
-def schedule_requests(conf, request_batches, server_manager, t, max_latency=100):
+def schedule_requests(conf, request_batches, server_manager, t, request_update_interval, max_latency=100):
     """
     Schedule requests
 
@@ -34,7 +34,7 @@ def schedule_requests(conf, request_batches, server_manager, t, max_latency=100)
     latencies = np.array(
         [[region.latency(batch.region) for region in server_manager.regions] for batch in request_batches]
     )
-    capacities = [conf.server_capacity] * len(server_manager.regions)
+    capacities = [conf.server_capacity // request_update_interval] * len(server_manager.regions)
     request_rates = [batch.load for batch in request_batches]
     servers = server_manager.servers_per_region()
     requests = sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers, max_latency)
