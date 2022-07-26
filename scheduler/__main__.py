@@ -53,7 +53,7 @@ def main():
             ui(t, requests_per_region, server_manager.servers, server_manager.servers_per_region())
 
     if conf.save:
-        save_file(plot)
+        save_file(conf, plot)
 
     plot.plot()
 

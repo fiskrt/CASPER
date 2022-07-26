@@ -14,7 +14,7 @@ class Plot:
             *[f"{name}_requests_from" for name in REGION_NAMES],
             *[f"{name}_requests_to" for name in REGION_NAMES],
             *[f"{name}_carbon_intensity" for name in REGION_NAMES],
-            "mean_carbon_emissions",
+            "total_carbon_emissions",
             *[f"{name}_carbon_emissions" for name in REGION_NAMES],
             "mean_latency",
             *[f"{name}_latency" for name in REGION_NAMES],
@@ -32,6 +32,9 @@ class Plot:
     ):
         total_requests_to_region = np.sum(requests_per_region, axis=0)
         total_requests_from_region = np.sum(requests_per_region, axis=1)
+
+        assert sum(total_requests_from_region) == sum(total_requests_to_region)
+
         mask = total_requests_to_region != 0
 
         carbon_emissions = total_requests_to_region * np.array(carbon_intensity)
@@ -45,7 +48,7 @@ class Plot:
         servers_per_region = server_manager.servers_per_region()
 
         mean_latency = np.mean(latencies[mask])
-        mean_carbon_emissions = np.mean(carbon_emissions[mask])
+        total_carbon_emissions = np.sum(carbon_emissions[mask])
         total_requests = np.sum(total_requests_to_region)
         total_dropped_requests = np.sum(dropped_requests_per_region)
         total_utilization = np.mean(total_requests / np.sum(server_manager.capacity_per_region()))
@@ -58,7 +61,7 @@ class Plot:
             *total_requests_from_region,
             *total_requests_to_region,
             *carbon_intensity,
-            mean_carbon_emissions,
+            total_carbon_emissions,
             *carbon_emissions,
             mean_latency,
             *latencies,
@@ -82,13 +85,23 @@ class Plot:
         df = df.groupby("timestep")
         fig = plt.figure(figsize=(14, 9))
         fig.tight_layout()
+        fig.suptitle(
+            [
+                "latency:",
+                self.conf.latency,
+                "max_servers:",
+                self.conf.max_servers,
+                "server_capacity:",
+                self.conf.server_capacity,
+            ]
+        )
         dfs = [
             df["total_requests"].sum(),
             df[[f"{name}_requests_from" for name in REGION_NAMES]].sum(),
             df[[f"{name}_requests_to" for name in REGION_NAMES]].sum(),
             df[[f"{name}_carbon_intensity" for name in REGION_NAMES]].mean(),
-            df["mean_carbon_emissions"].mean(),
-            df[[f"{name}_carbon_emissions" for name in REGION_NAMES]].mean(),
+            df["total_carbon_emissions"].sum(),
+            df[[f"{name}_carbon_emissions" for name in REGION_NAMES]].sum(),
             df["mean_latency"].mean(),
             df[[f"{name}_latency" for name in REGION_NAMES]].mean(),
             df["total_dropped_requests"].sum(),
@@ -103,7 +116,7 @@ class Plot:
             "requests_from",
             "requests_to",
             "carbon_intensity",
-            "mean_carbon_emissions",
+            "total_carbon_emissions",
             "carbon_emissions",
             "mean_latency",
             "latency",
@@ -120,12 +133,12 @@ class Plot:
             if len(df.shape) > 1 and df.shape[1] > 0:
                 ax = df.plot(ax=ax)
             else:
-                ax = df.plot(ax=ax, color="y")
-            # ax.set_xlabel("Hours (h)")
+                ax = df.plot(ax=ax, color="black")
             ax.set_xlabel("")
             ax.set_title(titles[i])
             ax.legend().remove()
+            ax.set_xticks([])
             i += 1
 
-        fig.legend(["mean"] + REGION_NAMES, loc="upper center", bbox_to_anchor=(0.5, 0.07), ncol=3)
+        fig.legend(["Mean/Total"] + REGION_NAMES, loc="upper center", bbox_to_anchor=(0.5, 0.07), ncol=3)
         plt.show()

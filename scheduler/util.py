@@ -5,7 +5,7 @@ import os
 from scheduler.constants import REGION_NAMES
 
 
-def save_file(plot):
+def save_file(conf, plot):
     """
     Here we save the data of a file by name specified of the arguments
     """
@@ -13,7 +13,16 @@ def save_file(plot):
     date = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
     if not os.path.exists("saved"):
         os.makedirs("saved")
-    df.to_csv(f"saved/{date}.csv", index=False)
+
+    fingerprint = [
+        "_latency_",
+        str(conf.latency),
+        "_max_servers_",
+        str(conf.max_servers),
+        "_timesteps_",
+        str(conf.timesteps),
+    ]
+    df.to_csv(f"saved/{date}_{''.join(fingerprint)}.csv", index=False)
 
 
 def load_file(name):
