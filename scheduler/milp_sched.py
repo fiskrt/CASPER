@@ -1,8 +1,6 @@
 import numpy as np
 import pulp as plp
 
-from scheduler.constants import SERVER_CAPACITY
-
 
 def schedule_servers(request_batches, server_manager, t, max_servers=4, max_latency=100):
     """
@@ -16,9 +14,10 @@ def schedule_servers(request_batches, server_manager, t, max_servers=4, max_late
     latencies = np.array(
         [[region.latency(batch.region) for region in server_manager.regions] for batch in request_batches]
     )
-    capacities = [SERVER_CAPACITY] * len(server_manager.regions)
+    capacities = [10] * len(server_manager.regions)
     request_rates = [batch.load for batch in request_batches]
 
+    # reqs are the tentative requests
     servers, reqs = place_servers(request_rates, capacities, latencies, carbon_intensities, max_servers, max_latency)
     return servers
 
@@ -35,7 +34,7 @@ def schedule_requests(request_batches, server_manager, t, max_latency=100):
     latencies = np.array(
         [[region.latency(batch.region) for region in server_manager.regions] for batch in request_batches]
     )
-    capacities = [SERVER_CAPACITY] * len(server_manager.regions)
+    capacities = [10] * len(server_manager.regions)
     request_rates = [batch.load for batch in request_batches]
     servers = server_manager.servers_per_region()
     requests = sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers, max_latency)
@@ -128,7 +127,6 @@ def sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers
     opt_model = plp.LpProblem(name="model")
     set_R = range(len(carbon_intensities))  # Region set
     x_vars = {(i, j): plp.LpVariable(cat=plp.LpInteger, lowBound=0, name=f"x_{i}_{j}") for i in set_R for j in set_R}
-    #    s_vars = {i: plp.LpVariable(cat=plp.LpInteger, lowBound=0, name=f"s_{i}") for i in set_R}
 
     for j in set_R:
         opt_model.addConstraint(
