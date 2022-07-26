@@ -39,6 +39,7 @@ class Server:
 
 class ServerManager:
     def __init__(self, conf, regions=None):
+        self.conf = conf
         if regions is None:
             self.regions = load_regions(conf)
         else:

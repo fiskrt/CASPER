@@ -2,16 +2,14 @@ import pytest
 from scheduler.server import ServerManager
 from scheduler.region import Region
 from scheduler.parser import parse_arguments
-from scheduler.constants import REGION_NAMES, SERVER_CAPACITY
-from scheduler.__main__ import move
+from scheduler.constants import REGION_NAMES
 
-import numpy as np
 import pandas as pd
 
 def test_manager():
     conf = parse_arguments([])
     rqs = pd.DataFrame(data=[1])
-    #Create regions
+    # Create regions
     regions = [Region(name=region, location=0, carbon_intensity=10, requests_per_hour=rqs, offset=0) for region in REGION_NAMES]
     server_manager = ServerManager(conf, regions=[])
 
@@ -35,7 +33,7 @@ def test_manager():
     assert server_manager.servers_per_region() == [1, 1, 1, 1]
 
     #Assert they are unutilized
-    assert server_manager.utilization_left_regions() == [SERVER_CAPACITY for _ in range(4)]
+    assert server_manager.utilization_left_regions() == [conf.server_capacity for _ in range(4)]
 
     dropped_requests_per_region = []
     for i in range(len(REGION_NAMES)):
@@ -54,7 +52,7 @@ def test_manager():
     assert dropped_requests_per_region == [0, 0, 0, 0]
 
     #Assert each server has a load of an task = 1
-    assert server_manager.utilization_left_regions() == [SERVER_CAPACITY - 1 for _ in range(4)]
+    assert server_manager.utilization_left_regions() == [conf.server_capacity - 1 for _ in range(4)]
 
 
 
