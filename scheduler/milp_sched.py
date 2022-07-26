@@ -109,12 +109,13 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
     objective = plp.lpSum(x_vars[i, j] * carbon_intensities[j] for i in set_R for j in set_R)
     opt_model.setObjective(objective)
     opt_model.solve(plp.PULP_CBC_CMD(msg=0))
-    if opt_model.sol_status != 1:
-        print("Did not find solution!")
     requests = np.zeros((len(set_R), len(set_R)), dtype=int)
     for i, j in x_vars.keys():
         requests[i, j] = int(x_vars[i, j].varValue)
 
+    if opt_model.sol_status != 1:
+        print("[x] Did not find a solution! Returning all 0's")
+        return [0] * n_regions, requests
     return [int(s.varValue) for s in s_vars.values()], requests
 
 
@@ -125,7 +126,8 @@ def sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers
     """
 
     opt_model = plp.LpProblem(name="model")
-    set_R = range(len(carbon_intensities))  # Region set
+    n_regions = len(carbon_intensities)
+    set_R = range(n_regions)  # Region set
     x_vars = {(i, j): plp.LpVariable(cat=plp.LpInteger, lowBound=0, name=f"x_{i}_{j}") for i in set_R for j in set_R}
 
     for j in set_R:
@@ -165,9 +167,11 @@ def sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers
     objective = plp.lpSum(x_vars[i, j] * carbon_intensities[j] for i in set_R for j in set_R)
     opt_model.setObjective(objective)
     opt_model.solve(plp.PULP_CBC_CMD(msg=0))
-    if opt_model.sol_status != 1:
-        print("Did not find solution!")
     requests = np.zeros((len(set_R), len(set_R)), dtype=int)
     for i, j in x_vars.keys():
         requests[i, j] = int(x_vars[i, j].varValue)
+
+    if opt_model.sol_status != 1:
+        print("[x] Did not find a solution! Returning all 0's")
+        return np.zeros((n_regions, n_regions))
     return requests
