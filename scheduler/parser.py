@@ -79,4 +79,12 @@ def parse_arguments(argv):
         help="Specify a constant rate",
     )
 
+    parser.add_argument(
+        "-c",
+        "--server-capacity",
+        type=int,
+        help="The capacity of each server",
+        default=1_000_000,
+    )
+
     return parser.parse_args(argv)

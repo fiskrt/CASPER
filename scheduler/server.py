@@ -1,4 +1,4 @@
-from scheduler.constants import REGION_NAMES, SERVER_CAPACITY
+from scheduler.constants import REGION_NAMES
 from scheduler.region import Region, load_regions
 import numpy as np
 import logging
@@ -39,6 +39,7 @@ class Server:
 
 class ServerManager:
     def __init__(self, conf):
+        self.conf = conf
         self.regions = load_regions(conf)
         self.servers = []
 
@@ -67,7 +68,7 @@ class ServerManager:
 
     def capacity_per_region(self):
         servers = np.array(self.servers_per_region())
-        return servers * SERVER_CAPACITY
+        return servers * self.conf.server_capacity
 
     def send(self, requests_per_region):
         """
@@ -124,7 +125,7 @@ class ServerManager:
         # self.servers = []
         # for region, requested_count in zip(self.regions, servers_per_region):
         #     for _ in range(requested_count):
-        #         server = Server(SERVER_CAPACITY, region)
+        #         server = Server(self.conf.server_capacity, region)
         #         self.servers.append(server)
 
         # Remove all abundant servers in each region
@@ -143,7 +144,7 @@ class ServerManager:
             c = count[region.name]
             while c < requested_count:
                 # TODO: Set server capacity in a more generic way
-                server = Server(SERVER_CAPACITY, region)
+                server = Server(self.conf.server_capacity, region)
                 self.servers.append(server)
                 c += 1
             count[region.name] = c

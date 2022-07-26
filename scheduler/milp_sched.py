@@ -2,7 +2,7 @@ import numpy as np
 import pulp as plp
 
 
-def schedule_servers(request_batches, server_manager, t, max_servers=4, max_latency=100):
+def schedule_servers(conf, request_batches, server_manager, t, max_servers=4, max_latency=100):
     """
     Place servers
 
@@ -14,7 +14,7 @@ def schedule_servers(request_batches, server_manager, t, max_servers=4, max_late
     latencies = np.array(
         [[region.latency(batch.region) for region in server_manager.regions] for batch in request_batches]
     )
-    capacities = [10] * len(server_manager.regions)
+    capacities = [conf.server_capacity] * len(server_manager.regions)
     request_rates = [batch.load for batch in request_batches]
 
     # reqs are the tentative requests
@@ -22,7 +22,7 @@ def schedule_servers(request_batches, server_manager, t, max_servers=4, max_late
     return servers
 
 
-def schedule_requests(request_batches, server_manager, t, max_latency=100):
+def schedule_requests(conf, request_batches, server_manager, t, max_latency=100):
     """
     Schedule requests
 
@@ -34,7 +34,7 @@ def schedule_requests(request_batches, server_manager, t, max_latency=100):
     latencies = np.array(
         [[region.latency(batch.region) for region in server_manager.regions] for batch in request_batches]
     )
-    capacities = [10] * len(server_manager.regions)
+    capacities = [conf.server_capacity] * len(server_manager.regions)
     request_rates = [batch.load for batch in request_batches]
     servers = server_manager.servers_per_region()
     requests = sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers, max_latency)

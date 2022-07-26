@@ -43,7 +43,7 @@ def main():
 
             # call the scheduling algorithm
             latency, carbon_intensity, requests_per_region = schedule_requests(
-                batches, server_manager, t, max_latency=conf.latency
+                conf, batches, server_manager, t, max_latency=conf.latency
             )
             # send requests to servers
             dropped_requests_per_region = server_manager.send(requests_per_region)
@@ -71,7 +71,7 @@ def move(conf, server_manager, t):
         batches.append(batch)
 
     servers_per_region = schedule_servers(
-        batches, server_manager, t, max_latency=conf.latency, max_servers=conf.max_servers
+        conf, batches, server_manager, t, max_latency=conf.latency, max_servers=conf.max_servers
     )
     # move servers to regions according to scheduling estimation the next hour
     server_manager.move(servers_per_region)
