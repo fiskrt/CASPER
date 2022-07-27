@@ -10,7 +10,7 @@ def save_file(conf, plot):
     Here we save the data of a file by name specified of the arguments
     """
     df = plot.build_df()
-    date = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     if not os.path.exists("saved"):
         os.makedirs("saved")
 
