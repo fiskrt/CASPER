@@ -1,5 +1,6 @@
 import numpy as np
 import pulp as plp
+import logging
 
 
 def schedule_servers(conf, request_batches, server_manager, t, max_servers=4, max_latency=100):
@@ -21,6 +22,10 @@ def schedule_servers(conf, request_batches, server_manager, t, max_servers=4, ma
     servers, reqs, obj_val = place_servers(
         request_rates, capacities, latencies, carbon_intensities, max_servers, max_latency
     )
+    if obj_val < 0:
+        logging.warning(
+            f"Could not place servers! t={t} reqs: {request_rates} caps: {capacities} max_servers: {max_servers}"
+        )
     print(f"At t={t} servers placed: {servers} obj_val:{obj_val}")
     return servers
 
@@ -41,13 +46,18 @@ def schedule_requests(conf, request_batches, server_manager, t, request_update_i
     request_rates = [batch.load for batch in request_batches]
     servers = server_manager.servers_per_region()
     requests, obj_val = sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers, max_latency)
-    print(f"At t={t}, obj_val={obj_val} requests scheduled at: \n{requests}")
+    if obj_val < 0:
+        logging.warning(
+            f"Could not schedule requests! t={t} reqs: {request_rates} caps: {capacities} servers: {servers}"
+        )
+    print(f"At t={t}, obj_val={obj_val:e} g C02 requests scheduled at: \n{requests}")
     return latencies, carbon_intensities, requests
 
 
 def place_servers(request_rates, capacities, latencies, carbon_intensities, max_servers, max_latency):
     """
     Schedule the requests and get where the servers should be placed.
+    If problem was not solved, a negative objective value is returned
 
     Args:
         param1: req_rates[i] is the number of requests from region i
@@ -57,10 +67,11 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
         param5: max_servers is the maximum number of servers
         param6: max_latency is the maximum latency allowed
     Returns:
-        x[i][j] is the number of requests from region i that should
+        return1: x[i][j] is the number of requests from region i that should
         be sent to region j.
-        n_servers[i] is the number of servers that should be started
-        in region i
+        return2: n_servers[i] is the number of servers that should be started
+        in region i.
+        return3: objective value. 
     """
 
     opt_model = plp.LpProblem(name="model")
@@ -118,8 +129,8 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
         requests[i, j] = int(x_vars[i, j].varValue)
 
     if opt_model.sol_status != 1:
-        print("[x] Did not find a solution! Returning all 0's")
-        return [0] * n_regions, requests
+        print("[x] Did not find a server placement! Returning all 0's")
+        return [0] * n_regions, requests, -10000
 
     return [int(s.varValue) for s in s_vars.values()], requests, objective.value()
 
@@ -177,6 +188,6 @@ def sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers
         requests[i, j] = int(x_vars[i, j].varValue)
 
     if opt_model.sol_status != 1:
-        print("[x] Did not find a solution! Returning all 0's")
-        return np.zeros((n_regions, n_regions))
+        print("[x] Did not find a request schedule! Returning all 0's")
+        return np.zeros((n_regions, n_regions)), -10000
     return requests, objective.value()
