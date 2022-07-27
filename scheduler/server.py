@@ -80,7 +80,6 @@ class ServerManager:
         requests_per_region: the number of requests that should be
         distributed across servers in a region
         """
-        dropped_requests_per_region = []
         for i in range(len(REGION_NAMES)):
             region = REGION_NAMES[i]
             # All requests to a {region}
@@ -88,13 +87,10 @@ class ServerManager:
             # All servers in the {region} we should send our request batches
             servers = [s for s in self.servers if s.region.name == region]
             # Craete request batches that are destined to {region}
-            server_loads, dropped_requests = self.build_server_loads(servers, requests)
-            dropped_requests_per_region.append(dropped_requests)
+            server_loads = self.build_server_loads(servers, requests)
 
             for server, load in server_loads:
                 server.push(load)
-
-        return dropped_requests_per_region
 
     def build_server_loads(self, servers, requests):
         initial_requests = requests
@@ -111,7 +107,7 @@ class ServerManager:
                 f"Dropping requests: {requests}, initially: {initial_requests}, server_length: {len(servers)}"
             )
 
-        return loads, requests
+        return loads
 
     def move(self, servers_per_region):
         """

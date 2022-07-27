@@ -51,7 +51,7 @@ class Plot:
         total_carbon_emissions = np.sum(carbon_emissions[mask])
         total_requests = np.sum(total_requests_to_region)
         total_dropped_requests = np.sum(dropped_requests_per_region)
-        total_utilization = np.mean(total_requests / np.sum(server_manager.capacity_per_region()))
+        total_utilization = np.mean(total_requests / np.sum(capacities + (capacities == 0)))
         total_servers = np.sum(servers_per_region)
 
         frame = (

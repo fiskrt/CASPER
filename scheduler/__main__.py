@@ -42,7 +42,13 @@ def main():
             )
 
             # send requests to servers
-            dropped_requests_per_region = server_manager.send(requests_per_region)
+            server_manager.send(requests_per_region)
+
+            # dropped requests
+            dropped_requests_per_region = [0, 0, 0, 0]
+            if len(server_manager.servers) == 0:
+                for i in range(len(batches)):
+                    dropped_requests_per_region[i] = batches[i].load
 
             # update_plot(plot, t, latency, carbon_intensity, requests_per_region)
             plot.add(server_manager, latency, carbon_intensity, requests_per_region, dropped_requests_per_region, t, i)
