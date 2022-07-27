@@ -80,8 +80,9 @@ class Plot:
     def build_df(self):
         return pd.DataFrame(self.data, columns=self.columns)
 
-    def plot(self):
-        df = self.build_df()
+    def plot(self, df=None):
+        if df is None:
+            df = self.build_df()
         df = df.groupby("timestep")
         fig = plt.figure(figsize=(14, 9))
         fig.tight_layout()

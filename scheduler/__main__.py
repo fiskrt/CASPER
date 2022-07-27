@@ -40,8 +40,10 @@ def main():
             latency, carbon_intensity, requests_per_region = schedule_requests(
                 conf, batches, server_manager, t, request_update_interval, max_latency=conf.latency
             )
+
             # send requests to servers
             dropped_requests_per_region = server_manager.send(requests_per_region)
+
             # update_plot(plot, t, latency, carbon_intensity, requests_per_region)
             plot.add(server_manager, latency, carbon_intensity, requests_per_region, dropped_requests_per_region, t, i)
 
