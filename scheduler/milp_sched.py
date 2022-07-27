@@ -27,6 +27,10 @@ def schedule_servers(conf, request_batches, server_manager, t, max_servers=4, ma
             f"Could not place servers! t={t} reqs: {request_rates} caps: {capacities} max_servers: {max_servers}"
         )
     # print(f"At t={t} servers placed: {servers} obj_val:{obj_val}")
+    # If we never plan to schedule at a region, we set the servers in that region to 0.
+    mask = np.sum(reqs, axis=0) == 0
+    servers[mask] = 0
+
     return servers
 
 
@@ -132,7 +136,7 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
         #        print("[x] Did not find a server placement! Returning all 0's")
         return [0] * n_regions, requests, -10000
 
-    return [int(s.varValue) for s in s_vars.values()], requests, objective.value()
+    return np.array([int(s.varValue) for s in s_vars.values()]), requests, objective.value()
 
 
 def sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers, max_latency):
