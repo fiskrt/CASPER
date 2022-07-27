@@ -26,7 +26,7 @@ def schedule_servers(conf, request_batches, server_manager, t, max_servers=4, ma
         logging.warning(
             f"Could not place servers! t={t} reqs: {request_rates} caps: {capacities} max_servers: {max_servers}"
         )
-    print(f"At t={t} servers placed: {servers} obj_val:{obj_val}")
+    # print(f"At t={t} servers placed: {servers} obj_val:{obj_val}")
     return servers
 
 
@@ -50,7 +50,7 @@ def schedule_requests(conf, request_batches, server_manager, t, request_update_i
         logging.warning(
             f"Could not schedule requests! t={t} reqs: {request_rates} caps: {capacities} servers: {servers}"
         )
-    print(f"At t={t}, obj_val={obj_val:e} g C02 requests scheduled at: \n{requests}")
+    # print(f"At t={t}, obj_val={obj_val:e} g C02 requests scheduled at: \n{requests}")
     return latencies, carbon_intensities, requests
 
 
@@ -129,7 +129,7 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
         requests[i, j] = int(x_vars[i, j].varValue)
 
     if opt_model.sol_status != 1:
-        print("[x] Did not find a server placement! Returning all 0's")
+        #        print("[x] Did not find a server placement! Returning all 0's")
         return [0] * n_regions, requests, -10000
 
     return [int(s.varValue) for s in s_vars.values()], requests, objective.value()
@@ -188,6 +188,6 @@ def sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers
         requests[i, j] = int(x_vars[i, j].varValue)
 
     if opt_model.sol_status != 1:
-        print("[x] Did not find a request schedule! Returning all 0's")
+        #        print("[x] Did not find a request schedule! Returning all 0's")
         return np.zeros((n_regions, n_regions)), -10000
     return requests, objective.value()
