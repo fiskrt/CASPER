@@ -28,7 +28,15 @@ class Plot:
         self.data = []
 
     def add(
-        self, server_manager, latency, carbon_intensity, requests_per_region, dropped_requests_per_region, t, interval
+        self,
+        server_manager,
+        latency,
+        carbon_intensity,
+        requests_per_region,
+        dropped_requests_per_region,
+        t,
+        interval,
+        request_update_interval,
     ):
         total_requests_to_region = np.sum(requests_per_region, axis=0)
         total_requests_from_region = np.sum(requests_per_region, axis=1)
@@ -42,7 +50,7 @@ class Plot:
         percentage = requests_per_region / (total_requests_to_region + (total_requests_to_region == 0))
         latencies = np.sum(percentage * latency, axis=0)
 
-        capacities = server_manager.capacity_per_region()
+        capacities = server_manager.capacity_per_region() / request_update_interval
         utilization_per_region = total_requests_to_region / (capacities + (capacities == 0))
 
         servers_per_region = server_manager.servers_per_region()
