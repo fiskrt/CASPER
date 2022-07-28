@@ -125,7 +125,9 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
                 )
             )
 
-    objective = plp.lpSum(x_vars[i, j] * carbon_intensities[j] for i in set_R for j in set_R)
+    objective = plp.lpSum(x_vars[i, j] * carbon_intensities[j] for i in set_R for j in set_R)  # + plp.lpSum(
+    #        s_vars[i] for i in set_R
+    #    )
     opt_model.setObjective(objective)
     opt_model.solve(plp.PULP_CBC_CMD(msg=0))
     requests = np.zeros((len(set_R), len(set_R)), dtype=int)
@@ -134,7 +136,7 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
 
     if opt_model.sol_status != 1:
         #        print("[x] Did not find a server placement! Returning all 0's")
-        return [0] * n_regions, requests, -10000
+        return np.zeros(n_regions), requests, -10000
 
     return np.array([int(s.varValue) for s in s_vars.values()]), requests, objective.value()
 
