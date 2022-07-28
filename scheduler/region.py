@@ -49,6 +49,6 @@ def load_regions(conf):
         request_path = "api/requests.csv"
         requests_per_hour = load_request_rate(request_path, offset, conf, date)
         carbon_intensity = load_carbon_intensity(path, offset, conf, date)
-        region = Region(name, location, carbon_intensity, requests_per_hour, offset)
+        region = Region(name, location, carbon_intensity, requests_per_hour)
         regions.append(region)
     return regions
