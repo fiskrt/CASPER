@@ -121,7 +121,7 @@ def place_servers(request_rates, capacities, latencies, carbon_intensities, max_
                     e=x_vars[i, j] * (latencies[i][j] - max_latency),
                     sense=plp.LpConstraintLE,
                     rhs=0,
-                    name=f"latency_const{i}{j}",
+                    name=f"latency_const{i}_{j}",
                 )
             )
 
@@ -182,7 +182,7 @@ def sched_reqs(request_rates, capacities, latencies, carbon_intensities, servers
                     e=x_vars[i, j] * (latencies[i][j] - max_latency),
                     sense=plp.LpConstraintLE,
                     rhs=0,
-                    name=f"latency_const{i}{j}",
+                    name=f"latency_const{i}_{j}",
                 )
             )
 
