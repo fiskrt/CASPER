@@ -5,15 +5,14 @@ from scheduler.util import get_regions
 
 
 class Region:
-    def __init__(self, name, location, carbon_intensity, requests_per_hour, offset) -> None:
+    def __init__(self, name, location, carbon_intensity, requests_per_hour) -> None:
         self.name = name
         self.location = location
         self.requests_per_hour = requests_per_hour
         self.carbon_intensity = carbon_intensity
-        self.offset = offset
 
     def get_requests_per_hour(self, t):
-        return self.requests_per_hour.iloc[t + self.offset]
+        return self.requests_per_hour.iloc[t]
 
     def latency(self, other):
         (x1, y1) = self.location

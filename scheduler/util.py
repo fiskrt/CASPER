@@ -63,14 +63,14 @@ def load_carbon_intensity(path, offset, conf, date="2021-01-01"):
     df = pd.read_csv(path)
     start_date = datetime.fromisoformat(date).replace(tzinfo=timezone.utc)
     timestamp = int(start_date.timestamp())
-    index = df.index[df["timestamp"] == timestamp]
 
+    index = df.index[df["timestamp"] == timestamp]
     assert len(index) > 0, f"Date [{start_date}] does not exist in electricity map data"
 
     start = index[0] + offset
-    # TODO: Consider more than just 24 hours ahead
-    end = start + conf.timesteps + 24
+    assert start > 0, start
 
+    end = start + conf.timesteps + 24
     assert end < len(df), "The selected interval overflows the electricity map data"
 
     # TODO: Consider whether avg or take everything
@@ -86,12 +86,13 @@ def load_request_rate(path, offset, conf, date="2021-01-01"):
     df = pd.read_csv(path)
     start_date = datetime.fromisoformat(date).replace(tzinfo=timezone.utc, year=2021)
     timestamp = int(start_date.timestamp())
-    index = df.index[df["timestamp"] == timestamp]
 
+    index = df.index[df["timestamp"] == timestamp]
     assert len(index) > 0, f"Date [{start_date}] does not exist in request rate data"
 
     start = index[0] + offset
-    # TODO: Consider more than just 24 hours ahead
+    assert start > 0, start
+
     end = start + conf.timesteps + 24
     assert end < len(df), "The selected interval overflows the reqeust rate data"
 
