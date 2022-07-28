@@ -1,29 +1,30 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scheduler.constants import REGION_NAMES
+from scheduler.util import get_regions
 
 
 class Plot:
     def __init__(self, conf) -> None:
         self.conf = conf
+        self.region_names = get_regions(conf)
         self.columns = [
             "timestep",
             "interval",
             "total_requests",
-            *[f"{name}_requests_from" for name in REGION_NAMES],
-            *[f"{name}_requests_to" for name in REGION_NAMES],
-            *[f"{name}_carbon_intensity" for name in REGION_NAMES],
+            *[f"{name}_requests_from" for name in self.region_names],
+            *[f"{name}_requests_to" for name in self.region_names],
+            *[f"{name}_carbon_intensity" for name in self.region_names],
             "total_carbon_emissions",
-            *[f"{name}_carbon_emissions" for name in REGION_NAMES],
+            *[f"{name}_carbon_emissions" for name in self.region_names],
             "mean_latency",
-            *[f"{name}_latency" for name in REGION_NAMES],
+            *[f"{name}_latency" for name in self.region_names],
             "total_dropped_requests",
-            *[f"{name}_dropped_requests" for name in REGION_NAMES],
+            *[f"{name}_dropped_requests" for name in self.region_names],
             "total_utilization",
-            *[f"{name}_utilization" for name in REGION_NAMES],
+            *[f"{name}_utilization" for name in self.region_names],
             "total_servers",
-            *[f"{name}_servers" for name in REGION_NAMES],
+            *[f"{name}_servers" for name in self.region_names],
         ]
         self.data = []
 
@@ -106,19 +107,19 @@ class Plot:
         )
         dfs = [
             df["total_requests"].sum(),
-            df[[f"{name}_requests_from" for name in REGION_NAMES]].sum(),
-            df[[f"{name}_requests_to" for name in REGION_NAMES]].sum(),
-            df[[f"{name}_carbon_intensity" for name in REGION_NAMES]].mean(),
+            df[[f"{name}_requests_from" for name in self.region_names]].sum(),
+            df[[f"{name}_requests_to" for name in self.region_names]].sum(),
+            df[[f"{name}_carbon_intensity" for name in self.region_names]].mean(),
             df["total_carbon_emissions"].sum(),
-            df[[f"{name}_carbon_emissions" for name in REGION_NAMES]].sum(),
+            df[[f"{name}_carbon_emissions" for name in self.region_names]].sum(),
             df["mean_latency"].mean(),
-            df[[f"{name}_latency" for name in REGION_NAMES]].mean(),
+            df[[f"{name}_latency" for name in self.region_names]].mean(),
             df["total_dropped_requests"].sum(),
-            df[[f"{name}_dropped_requests" for name in REGION_NAMES]].sum(),
+            df[[f"{name}_dropped_requests" for name in self.region_names]].sum(),
             df["total_utilization"].mean(),
-            df[[f"{name}_utilization" for name in REGION_NAMES]].mean(),
+            df[[f"{name}_utilization" for name in self.region_names]].mean(),
             df["total_servers"].mean(),
-            df[[f"{name}_servers" for name in REGION_NAMES]].mean(),
+            df[[f"{name}_servers" for name in self.region_names]].mean(),
         ]
         titles = [
             "total_requests",
@@ -149,5 +150,5 @@ class Plot:
             ax.set_xticks([])
             i += 1
 
-        fig.legend(["Mean/Total"] + REGION_NAMES, loc="upper center", bbox_to_anchor=(0.5, 0.07), ncol=3)
+        fig.legend(["Mean/Total"] + self.region_names, loc="upper center", bbox_to_anchor=(0.5, 0.11), ncol=3)
         plt.show()

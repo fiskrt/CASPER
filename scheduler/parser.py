@@ -5,6 +5,15 @@ def parse_arguments(argv):
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
+        "-p",
+        "--region-kind",
+        type=str,
+        choices=["original", "europe", "north_america"],
+        help="The type of data we want to load. Original: 2021-01-02, Europe: 2021-10-21, North America: 2022-04-22",
+        default="original",
+    )
+
+    parser.add_argument(
         "-t",
         "--timesteps",
         type=int,

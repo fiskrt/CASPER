@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import pandas as pd
 import os
 
-from scheduler.constants import REGION_NAMES
+from scheduler.constants import REGION_EUROPE, REGION_NORTH_AMERICA, REGION_ORIGINAL
 
 
 def save_file(conf, plot):
@@ -84,7 +84,7 @@ def load_request_rate(path, offset, conf, date="2021-01-01"):
     Loads request rate data for a region and returns its data.
     """
     df = pd.read_csv(path)
-    start_date = datetime.fromisoformat(date).replace(tzinfo=timezone.utc)
+    start_date = datetime.fromisoformat(date).replace(tzinfo=timezone.utc, year=2021)
     timestamp = int(start_date.timestamp())
     index = df.index[df["timestamp"] == timestamp]
 
@@ -100,15 +100,25 @@ def load_request_rate(path, offset, conf, date="2021-01-01"):
     return df
 
 
-def ui(timestep, request_per_region, servers, servers_per_regions_list):
+def ui(conf, timestep, request_per_region, servers, servers_per_regions_list):
+    region_names = get_regions(conf)
     print(f"______________________________________ \n TIMESTEP: {timestep}")
     print("Requests per region:")
-    [print(f"{REGION_NAMES[i]} - {request[0]}") for i, request in enumerate(request_per_region)]
+    [print(f"{region_names[i]} - {request[0]}") for i, request in enumerate(request_per_region)]
     print(" \n SERVERS PER REGION: \n")
     [
-        print(f"{REGION_NAMES[i]} - {servers_per_region}")
+        print(f"{region_names[i]} - {servers_per_region}")
         for i, servers_per_region in enumerate(servers_per_regions_list)
     ]
     print("\n Server objects in ServerManager: ")
     print(servers)
     print("______________________________________")
+
+
+def get_regions(conf):
+    if conf.region_kind == "original":
+        return REGION_ORIGINAL
+    elif conf.region_kind == "europe":
+        return REGION_EUROPE
+    elif conf.region_kind == "north_america":
+        return REGION_NORTH_AMERICA

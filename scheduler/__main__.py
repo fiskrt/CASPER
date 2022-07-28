@@ -45,7 +45,7 @@ def main():
             server_manager.send(requests_per_region)
 
             # dropped requests
-            dropped_requests_per_region = [0, 0, 0, 0]
+            dropped_requests_per_region = [0] * len(batches)
             if len(server_manager.servers) == 0:
                 for i in range(len(batches)):
                     dropped_requests_per_region[i] = batches[i].load
@@ -67,7 +67,7 @@ def main():
             server_manager.reset()
 
         if conf.verbose:
-            ui(t, requests_per_region, server_manager.servers, server_manager.servers_per_region())
+            ui(conf, t, requests_per_region, server_manager.servers, server_manager.servers_per_region())
 
     if conf.save:
         save_file(conf, plot)

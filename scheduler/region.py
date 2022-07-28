@@ -1,6 +1,7 @@
 import os
 from scheduler.util import load_carbon_intensity, load_request_rate
-from scheduler.constants import REGION_NAMES, REGION_LOCATIONS, REGION_OFFSETS
+from scheduler.constants import REGION_LOCATIONS, REGION_OFFSETS
+from scheduler.util import get_regions
 
 
 class Region:
@@ -30,13 +31,23 @@ def load_regions(conf):
     date = conf.start_date
     regions = []
     d = "api"
-    for name in REGION_NAMES:
+    kind = ""
+    if conf.region_kind == "original":
+        kind = "original"
+    elif conf.region_kind == "europe":
+        kind = "europe"
+    elif conf.region_kind == "north_america":
+        kind = "north_america"
+    d = os.path.join(d, kind)
+
+    for name in get_regions(conf):
         file = f"{name}.csv"
         path = os.path.join(d, file)
         location = REGION_LOCATIONS[name]
+        # hardcoded offsets
         offset = REGION_OFFSETS[name]
 
-        request_path = os.path.join(d, "requests.csv")
+        request_path = "api/requests.csv"
         requests_per_hour = load_request_rate(request_path, offset, conf, date)
         carbon_intensity = load_carbon_intensity(path, offset, conf, date)
         region = Region(name, location, carbon_intensity, requests_per_hour, offset)

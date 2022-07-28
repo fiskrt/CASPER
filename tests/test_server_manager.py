@@ -2,17 +2,19 @@ import pytest
 from scheduler.server import ServerManager
 from scheduler.region import Region
 from scheduler.parser import parse_arguments
-from scheduler.constants import REGION_NAMES
 
 import pandas as pd
+
+from scheduler.util import get_regions
 
 
 def test_manager():
     conf = parse_arguments([])
+    region_names = get_regions(conf)
     rqs = pd.DataFrame(data=[1])
     # Create regions
     regions = [
-        Region(name=region, location=0, carbon_intensity=10, requests_per_hour=rqs, offset=0) for region in REGION_NAMES
+        Region(name=region, location=0, carbon_intensity=10, requests_per_hour=rqs, offset=0) for region in region_names
     ]
     server_manager = ServerManager(conf, regions=[])
 
@@ -22,7 +24,7 @@ def test_manager():
     server_manager = ServerManager(conf, regions=regions)
 
     # Assert n.o. regions correct when initiated
-    assert len(server_manager.regions) == len(REGION_NAMES)
+    assert len(server_manager.regions) == len(region_names)
 
     servers_per_region = server_manager.servers_per_region()
     correct_servers_per_region = [0, 0, 0, 0]
@@ -39,8 +41,8 @@ def test_manager():
     assert server_manager.utilization_left_regions() == [conf.server_capacity for _ in range(4)]
 
     dropped_requests_per_region = []
-    for i in range(len(REGION_NAMES)):
-        region = REGION_NAMES[i]
+    for i in range(len(region_names)):
+        region = region_names[i]
         requests = int(rqs[0])
         print(requests)
         # All servers in the {region} we should send our request batches

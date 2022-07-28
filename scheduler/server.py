@@ -1,5 +1,5 @@
-from scheduler.constants import REGION_NAMES
 from scheduler.region import Region, load_regions
+from scheduler.util import get_regions
 import numpy as np
 import logging
 
@@ -40,6 +40,7 @@ class Server:
 class ServerManager:
     def __init__(self, conf, regions=None):
         self.conf = conf
+        self.region_names = get_regions(conf)
         if regions is None:
             self.regions = load_regions(conf)
         else:
@@ -54,20 +55,20 @@ class ServerManager:
             server.reset_utilization()
 
     def utilization_left_regions(self):
-        utilization_left = {region: 0 for region in REGION_NAMES}
+        utilization_left = {region: 0 for region in self.region_names}
 
         for server in self.servers:
             utilization_left[server.region.name] += server.utilization_left()
 
-        return [utilization_left[region] for region in REGION_NAMES]
+        return [utilization_left[region] for region in self.region_names]
 
     def servers_per_region(self):
-        count = {region: 0 for region in REGION_NAMES}
+        count = {region: 0 for region in self.region_names}
 
         for server in self.servers:
             count[server.region.name] += 1
 
-        return [count[region] for region in REGION_NAMES]
+        return [count[region] for region in self.region_names]
 
     def capacity_per_region(self):
         servers = np.array(self.servers_per_region())
@@ -80,8 +81,8 @@ class ServerManager:
         requests_per_region: the number of requests that should be
         distributed across servers in a region
         """
-        for i in range(len(REGION_NAMES)):
-            region = REGION_NAMES[i]
+        for i in range(len(self.region_names)):
+            region = self.region_names[i]
             # All requests to a {region}
             requests = sum(requests_per_region[:, i])
             # All servers in the {region} we should send our request batches
@@ -116,7 +117,7 @@ class ServerManager:
 
         servers_per_region: specifies the number of servers per region
         """
-        count = {region: 0 for region in REGION_NAMES}
+        count = {region: 0 for region in self.region_names}
 
         for server in self.servers:
             count[server.region.name] += 1
@@ -128,7 +129,7 @@ class ServerManager:
         #         self.servers.append(server)
 
         # Remove all abundant servers in each region
-        for region_name, requested_count in zip(REGION_NAMES, servers_per_region):
+        for region_name, requested_count in zip(self.region_names, servers_per_region):
             if count[region_name] > requested_count:
                 indices = [i for i, s in enumerate(self.servers) if s.region.name == region_name]
                 n = count[region_name] - requested_count
