@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 import pandas as pd
 import os
+#import numpy as np
 
 from scheduler.constants import REGION_EUROPE, REGION_NORTH_AMERICA, REGION_ORIGINAL
 
@@ -99,6 +100,14 @@ def load_request_rate(path, offset, conf, date="2021-01-01"):
     df = df["requests"].iloc[start:end].reset_index(drop=True)
 
     return df
+
+# NOT RELEVANT, BACKUP
+# def latencies_per_regions(latency, requests):
+#     # [i][:] sum latencies from one region
+#     outgoing_requests_per_region = requests.T[:]
+#     outgoing_latencies_per_region = latency.T[:]
+#     latencies_per_region = [np.dot(l, r)/ len(r) for (l, r) in zip(outgoing_latencies_per_region, outgoing_requests_per_region)]
+#     return latencies_per_region
 
 
 def ui(conf, timestep, request_per_region, servers, servers_per_regions_list):
