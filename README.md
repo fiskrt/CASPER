@@ -55,3 +55,9 @@ Run the following command in the root folder
 ```
 pytest -v
 ```
+
+## Datasets 
+
+For latency we use [1] containing average latency to AWS during one year for implemented regions. These are applied manually in the code. 
+
+[1]: https://www.cloudping.co/grid/latency/timeframe/1Y
