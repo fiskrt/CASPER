@@ -1,7 +1,10 @@
+from fnmatch import translate
 import os
+import pandas as pd
 from scheduler.util import load_carbon_intensity, load_request_rate
 from scheduler.constants import REGION_LOCATIONS, REGION_OFFSETS
 from scheduler.util import get_regions
+
 
 
 class Region:
@@ -14,10 +17,51 @@ class Region:
     def get_requests_per_hour(self, t):
         return self.requests_per_hour.iloc[t]
 
+    # def latency(self, other):
+    #     (x1, y1) = self.location
+    #     (x2, y2) = other.location
+    #     return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+
+    def name_translator(self, name):
+        name_translator_dic = { "US-CAL-CISO" : "US-West-N.-California",
+                                "US-MIDA-PJM" : "US-East-Ohio",
+                                "US-MIDW-MISO" : "US-East-N.-Virginia",
+                                "US-TEX-ERCO" : "US-East-N.-Virginia",
+                                "DE" : "EU-Frankfurt",
+                                "FR" : "EU-Paris",
+                                "IE" : "EU-Ireland",
+                                "IT-NO" : "EU-Milan",
+                                "SE" : "EU-Stockholm" }
+        return name_translator_dic[name]
+
     def latency(self, other):
-        (x1, y1) = self.location
-        (x2, y2) = other.location
-        return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+        '''
+        Gathered as listed in the readme.
+        Cali = Cali
+        Mid atlantic = Ohio
+        Mid west = Virginia
+        Texas = ????????
+        '''
+        #path = os.join.path("api", )
+
+        i = self.name_translator(self.name)
+        j = self.name_translator(other.name)
+
+        df = pd.read_csv("api/cloudping/latency.csv")
+        print(df)
+
+        col = df.iloc[:,0]
+        df = df.iloc[:, 1:]
+        df.columns = col
+        print(df)
+
+        df.columns = df.iloc[:,0]
+
+        i_index = df[i].index
+        j_index = df[j].index
+
+        df.iloc[i_index,j_index]
+        exit()
 
     def __repr__(self) -> str:
         return self.name
