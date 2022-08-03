@@ -13,6 +13,7 @@ class Region:
         self.location = location
         self.requests_per_hour = requests_per_hour
         self.carbon_intensity = carbon_intensity
+        self.latency_df = pd.read_csv("api/cloudping/latency.csv")
 
     def get_requests_per_hour(self, t):
         return self.requests_per_hour.iloc[t]
@@ -47,21 +48,11 @@ class Region:
         i = self.name_translator(self.name)
         j = self.name_translator(other.name)
 
-        df = pd.read_csv("api/cloudping/latency.csv")
+        df = self.latency_df
         print(df)
-
-        col = df.iloc[:,0]
-        df = df.iloc[:, 1:]
-        df.columns = col
-        print(df)
-
-        df.columns = df.iloc[:,0]
-
-        i_index = df[i].index
-        j_index = df[j].index
-
-        df.iloc[i_index,j_index]
-        exit()
+        i_index = df.columns.get_loc(i)
+        j_index = df.columns.get_loc(j)
+        return df.iloc[i_index, j_index]
 
     def __repr__(self) -> str:
         return self.name
